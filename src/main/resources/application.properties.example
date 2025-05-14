@@ -1,0 +1,13 @@
+spring.application.name=alkile-app
+spring.profiles.active=dev
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/nombre_bd
+spring.datasource.username=usuario_ejemplo
+spring.datasource.password=contraseña_ejemplo
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+spring.jpa.show-sql=true
+spring.jpa.hibernate.ddl-auto=update
+
+server.port=8080
+logging.level.root=INFO
