@@ -12,15 +12,22 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "role_name", nullable = false, unique = true, length = 20)
+    @Column(name = "role_name", nullable = false, unique = true)
     private String roleName;
 
     @Column(length = 255)
     private String description;
 
     @ManyToMany(mappedBy = "roles")
-    @JsonIgnoreProperties({"roles", "handler", "hibernateLazyInitializer"})
+    @JsonIgnoreProperties({ "roles", "handler", "hibernateLazyInitializer" })
     private Set<User> users;
+
+    public Role() {
+    }
+
+    public Role(String roleName) {
+        this.roleName = roleName;
+    }
 
     public Long getId() {
         return id;
@@ -53,6 +60,4 @@ public class Role {
     public void setUsers(Set<User> users) {
         this.users = users;
     }
-
-    
 }

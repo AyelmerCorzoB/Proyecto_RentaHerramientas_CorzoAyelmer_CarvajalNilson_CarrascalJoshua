@@ -3,9 +3,7 @@ package com.alkileapp.alkile_app.domain.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "users")
@@ -51,14 +49,14 @@ public class User {
     )
     private Set<Role> roles;
 
+    @Transient
+    private boolean admin;
+
     @OneToOne(mappedBy = "user")
     private Supplier supplier;
 
     @OneToOne(mappedBy = "user")
     private Customer customer;
-
-    @Embedded
-    private Audit audit;
 
     public Long getId() {
         return id;
@@ -116,6 +114,10 @@ public class User {
         this.address = address;
     }
 
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
     public LocalDateTime getRegistrationDate() {
         return registrationDate;
     }
@@ -136,8 +138,12 @@ public class User {
         return roles;
     }
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
     }
 
     public Supplier getSupplier() {
@@ -155,13 +161,4 @@ public class User {
     public void setCustomer(Customer customer) {
         this.customer = customer;
     }
-
-    public Audit getAudit() {
-        return audit;
-    }
-
-    public void setAudit(Audit audit) {
-        this.audit = audit;
-    }
-
 }
