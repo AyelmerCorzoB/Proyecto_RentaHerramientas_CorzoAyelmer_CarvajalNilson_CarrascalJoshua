@@ -42,7 +42,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/api/auth/**").permitAll()
-            .requestMatchers("/api/suppliers/**").authenticated()
+            .requestMatchers("/api/alkile/**").authenticated()
             .anyRequest().authenticated()
         );
     

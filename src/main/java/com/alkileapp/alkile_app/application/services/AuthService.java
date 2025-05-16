@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.List;
 
 @Service
 public class AuthService {
@@ -53,7 +54,7 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest request) {
-        // Verificar si el usuario ya existe
+       
         if (userService.findOneByUsername(request.username()).isPresent()) {
             throw new RuntimeException("Username already exists");
         }
@@ -62,10 +63,8 @@ public class AuthService {
             throw new RuntimeException("Email already in use");
         }
 
-        Role userRole = roleRepository.findByName("USER")
-                .orElseThrow(() -> new RuntimeException("Role USER not found"));
-
-        // Crear nuevo usuario
+        Role userRole = roleRepository.findByName("ADMIN")
+    .orElseThrow(() -> new RuntimeException("Role ADMIN not found"));
         User user = new User();
         user.setUsername(request.username());
         user.setEmail(request.email());

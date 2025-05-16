@@ -6,8 +6,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,12 +50,13 @@ public class User implements UserDetails {
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean active = true;
 
-    // Relación ManyToMany con roles (tabla intermedia user_roles)
+    @JsonIgnoreProperties({"users", "handler", "hibernateLazyInitializer"})
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-        name = "user_roles",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id")
+        name = "users_roles",
+        joinColumns = @JoinColumn(name="user_id"),
+        inverseJoinColumns = @JoinColumn(name="role_id"),
+        uniqueConstraints = { @UniqueConstraint(columnNames = {"user_id", "role_id"})}
     )
     private Set<Role> roles;
 
@@ -65,8 +69,8 @@ public class User implements UserDetails {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Customer customer;
 
-    // Constructores
-    public User() {}
+    public User() {
+    }
 
     public User(String username, String email, String password, String name) {
         this.username = username;
@@ -75,7 +79,6 @@ public class User implements UserDetails {
         this.name = name;
     }
 
-    // Implementación de UserDetails
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
@@ -87,7 +90,6 @@ public class User implements UserDetails {
     public String getPassword() {
         return password;
     }
-
 
     @Override
     public boolean isAccountNonExpired() {
@@ -109,7 +111,6 @@ public class User implements UserDetails {
         return active;
     }
 
-    // Getters y Setters
     public Long getId() {
         return id;
     }
@@ -178,14 +179,6 @@ public class User implements UserDetails {
         this.active = active;
     }
 
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
-
     public boolean isAdmin() {
         return admin;
     }
@@ -210,7 +203,6 @@ public class User implements UserDetails {
         this.customer = customer;
     }
 
-    // Métodos de conveniencia
     public void addRole(Role role) {
         this.roles.add(role);
         role.getUsers().add(this);
@@ -226,5 +218,13 @@ public class User implements UserDetails {
         if (this.registrationDate == null) {
             this.registrationDate = LocalDateTime.now();
         }
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 }

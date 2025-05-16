@@ -3,6 +3,8 @@ package com.alkileapp.alkile_app.domain.entities;
 import jakarta.persistence.*;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "roles")
 public class Role {
@@ -17,7 +19,7 @@ public class Role {
     @Column(length = 255)
     private String description;
 
-    // Relación inversa con User
+    @JsonIgnoreProperties({"roles", "handler", "hibernateLazyInitializer"})
     @ManyToMany(mappedBy = "roles")
     private Set<User> users;
 

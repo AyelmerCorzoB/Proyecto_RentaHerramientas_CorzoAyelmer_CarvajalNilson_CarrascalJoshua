@@ -12,6 +12,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/alkile/users")
 public class UserController {
 
     private final IUserService userService;
@@ -71,7 +73,6 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
-        // Verificar si el email ya está en uso por otro usuario
         Optional<User> existingUserWithEmail = userService.findByEmail(userDto.getEmail());
         if (existingUserWithEmail.isPresent() && !existingUserWithEmail.get().getId().equals(id)) {
             return ResponseEntity.badRequest().build();
@@ -80,11 +81,9 @@ public class UserController {
         User user = convertToEntity(userDto);
         user.setId(id);
         
-        // Si se proporciona una nueva contraseña, codificarla
         if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         } else {
-            // Mantener la contraseña existente
             userService.findById(id).ifPresent(existingUser -> 
                 user.setPassword(existingUser.getPassword())
             );
@@ -115,7 +114,6 @@ public class UserController {
         dto.setRegistrationDate(user.getRegistrationDate());
         dto.setActive(user.isActive());
         
-        // Convertir roles a strings
         Set<String> roleNames = user.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toSet());
@@ -134,7 +132,6 @@ public class UserController {
         user.setAddress(dto.getAddress());
         user.setActive(dto.isActive());
         
-        // Convertir nombres de roles a entidades Role
         if (dto.getRoles() != null && !dto.getRoles().isEmpty()) {
             Set<Role> roles = new HashSet<>();
             for (String roleName : dto.getRoles()) {

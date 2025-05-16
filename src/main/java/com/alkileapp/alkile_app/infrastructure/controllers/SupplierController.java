@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/suppliers")
+@RequestMapping("/api/alkile/suppliers")
 public class SupplierController {
 
     private final ISupplierService supplierService;

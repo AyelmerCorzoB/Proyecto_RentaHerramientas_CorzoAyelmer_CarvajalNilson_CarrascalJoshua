@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/customers")
+@RequestMapping("/api/alkile/customers")
 public class CustomerController {
 
     private final ICustomerService customerService;
