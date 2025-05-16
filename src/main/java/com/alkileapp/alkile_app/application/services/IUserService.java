@@ -1,12 +1,10 @@
 package com.alkileapp.alkile_app.application.services;
 
-
+import com.alkileapp.alkile_app.domain.entities.User;
 import java.util.Optional;
 
-import com.alkileapp.alkile_app.domain.dto.UserDto;
-import com.alkileapp.alkile_app.domain.entities.User;
 public interface IUserService {
-    User registrOneCustomer(UserDto newUser);
-
     Optional<User> findOneByUsername(String username);
+    boolean existsByEmail(String email);
+    User save(User user);
 }

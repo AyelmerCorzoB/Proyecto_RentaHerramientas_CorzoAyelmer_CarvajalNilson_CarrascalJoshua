@@ -12,9 +12,4 @@ public class AlkileAppApplication {
     public static void main(String[] args) {
         SpringApplication.run(AlkileAppApplication.class, args);
     }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 }

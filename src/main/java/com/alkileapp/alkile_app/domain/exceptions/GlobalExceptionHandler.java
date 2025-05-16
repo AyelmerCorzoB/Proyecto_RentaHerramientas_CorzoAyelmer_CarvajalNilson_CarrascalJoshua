@@ -1,65 +1,34 @@
 package com.alkileapp.alkile_app.domain.exceptions;
 
-import java.time.LocalDateTime;
-
+import com.alkileapp.alkile_app.domain.dto.ApiError;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import com.alkileapp.alkile_app.domain.dto.ApiError;
-
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handlerGenericException(Exception exception, HttpServletRequest request){
-
-        ApiError apiError = new ApiError();
-        apiError.setBackendMessage(exception.getLocalizedMessage());
-        apiError.setUrl(request.getRequestURL().toString());
-        apiError.setMethod(request.getMethod());
-        apiError.setMessage("Error interno en el servidor, vuelva a intentarlo");
-        apiError.setTimestamp(LocalDateTime.now() );
-
+    public ResponseEntity<ApiError> handlerGenericException(Exception ex, HttpServletRequest request) {
+        ApiError apiError = new ApiError(
+            ex.getMessage(),
+            ex.getClass().getSimpleName(),
+            request.getRequestURL().toString(),
+            request.getMethod()
+        );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiError);
     }
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<?> handlerAccessDeniedException(HttpServletRequest request,
-                                                          AccessDeniedException exception){
-
-        ApiError apiError = new ApiError();
-        apiError.setBackendMessage(exception.getLocalizedMessage());
-        apiError.setUrl(request.getRequestURL().toString());
-        apiError.setMethod(request.getMethod());
-        apiError.setMessage("Acceso denegado. No tienes los permisos necesarios para acceder a esta función. " +
-                "Por favor, contacta al administrador si crees que esto es un error.");
-        apiError.setTimestamp(LocalDateTime.now() );
-
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiError);
-    }
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handlerMethodArgumentNotValidException(MethodArgumentNotValidException exception, HttpServletRequest request){
-
-
-        ApiError apiError = new ApiError();
-        apiError.setBackendMessage(exception.getLocalizedMessage());
-        apiError.setUrl(request.getRequestURL().toString());
-        apiError.setMethod(request.getMethod());
-        apiError.setTimestamp(LocalDateTime.now());
-        apiError.setMessage("Error en la petición enviada");
-
-        System.out.println(
-                exception.getAllErrors().stream().map(each -> each.getDefaultMessage())
-                        .collect(Collectors.toList())
+    
+    @ExceptionHandler(io.jsonwebtoken.security.SecurityException.class)
+    public ResponseEntity<ApiError> handlerJwtException(io.jsonwebtoken.security.SecurityException ex, HttpServletRequest request) {
+        ApiError apiError = new ApiError(
+            "Error en el token JWT: " + ex.getMessage(),
+            ex.getClass().getSimpleName(),
+            request.getRequestURL().toString(),
+            request.getMethod()
         );
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiError);
     }
-
 }

@@ -30,8 +30,8 @@ public class Reservation {
     private LocalDate endDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "VARCHAR(20) DEFAULT 'Pending'")
-    private ReservationStatus status;
+    @Column(length = 20)
+    private ReservationStatus status = ReservationStatus.PENDING;
 
     @Column(name = "creation_date", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime creationDate;

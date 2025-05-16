@@ -2,16 +2,20 @@ package com.alkileapp.alkile_app.domain.dto;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 public class ApiError {
     private String backendMessage;
-    private String message;
     private String url;
     private String method;
-
-    @JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss")
     private LocalDateTime timestamp;
+    private String message;
+
+    public ApiError(String message, String backendMessage, String url, String method) {
+        this.message = message;
+        this.backendMessage = backendMessage;
+        this.url = url;
+        this.method = method;
+        this.timestamp = LocalDateTime.now();
+    }
 
     public String getBackendMessage() {
         return backendMessage;
@@ -19,22 +23,6 @@ public class ApiError {
 
     public void setBackendMessage(String backendMessage) {
         this.backendMessage = backendMessage;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
     }
 
     public String getUrl() {
@@ -53,5 +41,19 @@ public class ApiError {
         this.method = method;
     }
 
-    
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }
