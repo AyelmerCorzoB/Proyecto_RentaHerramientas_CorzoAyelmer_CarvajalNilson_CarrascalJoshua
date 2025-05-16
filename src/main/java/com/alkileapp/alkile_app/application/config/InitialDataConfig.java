@@ -13,15 +13,21 @@ public class InitialDataConfig {
     @Bean
     CommandLineRunner initRoles(RoleRepository roleRepository) {
         return args -> {
+            if (roleRepository.findByName("ADMIN").isEmpty()) {
+                Role adminRole = new Role("ADMIN","Administrador del sistema");
+                roleRepository.save(adminRole);
+            }
+
             if (roleRepository.findByName("USER").isEmpty()) {
-                Role userRole = new Role("USER");
+                Role userRole = new Role("USER","Usuario Cliente");
+                roleRepository.save(userRole);
+            }
+
+            if (roleRepository.findByName("SUPPLIER").isEmpty()) {
+                Role userRole = new Role("SUPPLIER","Usuario Proveedor");
                 roleRepository.save(userRole);
             }
             
-            if (roleRepository.findByName("ADMIN").isEmpty()) {
-                Role adminRole = new Role("ADMIN");
-                roleRepository.save(adminRole);
-            }
         };
     }
 }

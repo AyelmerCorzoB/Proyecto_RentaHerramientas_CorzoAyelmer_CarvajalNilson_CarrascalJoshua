@@ -1,11 +1,7 @@
 package com.alkileapp.alkile_app.domain.entities;
 
 import jakarta.persistence.*;
-
-import java.util.List;
 import java.util.Set;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "roles")
@@ -16,26 +12,20 @@ public class Role {
     private Long id;
 
     @Column(name = "role_name", nullable = false, unique = true)
-    private String name; // Keep this consistent
-    
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    private String name;
 
     @Column(length = 255)
     private String description;
 
+    // Relación inversa con User
     @ManyToMany(mappedBy = "roles")
     private Set<User> users;
 
     public Role() {}
 
-    public Role(String name) {
+    public Role(String name,String description) {
         this.name = name;
+        this.description = description;
     }
 
     public Long getId() {
@@ -46,6 +36,13 @@ public class Role {
         this.id = id;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getDescription() {
         return description;

@@ -47,6 +47,7 @@ public class User implements UserDetails {
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean active = true;
 
+    // Relación ManyToMany con roles (tabla intermedia user_roles)
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "user_roles",
@@ -65,8 +66,7 @@ public class User implements UserDetails {
     private Customer customer;
 
     // Constructores
-    public User() {
-    }
+    public User() {}
 
     public User(String username, String email, String password, String name) {
         this.username = username;
@@ -88,10 +88,6 @@ public class User implements UserDetails {
         return password;
     }
 
-    @Override
-    public String getUsername() {
-        return username;
-    }
 
     @Override
     public boolean isAccountNonExpired() {
@@ -128,6 +124,10 @@ public class User implements UserDetails {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public void setUsername(String username) {

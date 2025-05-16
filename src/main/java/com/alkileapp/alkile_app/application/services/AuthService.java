@@ -58,12 +58,10 @@ public class AuthService {
             throw new RuntimeException("Username already exists");
         }
 
-        // Verificar si el email ya existe
         if (userService.existsByEmail(request.email())) {
             throw new RuntimeException("Email already in use");
         }
 
-        // Obtener el rol USER por defecto
         Role userRole = roleRepository.findByName("USER")
                 .orElseThrow(() -> new RuntimeException("Role USER not found"));
 
@@ -78,7 +76,6 @@ public class AuthService {
         user.setActive(true);
         user.setRoles(Collections.singleton(userRole));
 
-        // Guardar el usuario
         User savedUser = userService.save(user);
 
         String jwtToken = jwtService.generateToken(savedUser);
