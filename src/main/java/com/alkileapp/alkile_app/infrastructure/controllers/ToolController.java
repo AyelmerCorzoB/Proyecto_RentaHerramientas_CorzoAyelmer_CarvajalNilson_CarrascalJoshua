@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/tools")
+@RequestMapping("/api/alkile/tools")
 public class ToolController {
 
     private final IToolService toolService;

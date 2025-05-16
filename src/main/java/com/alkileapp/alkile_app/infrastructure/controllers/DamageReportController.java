@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/damage-reports")
+@RequestMapping("/api/alkile/damage-reports")
 public class DamageReportController {
 
     private final IDamageReportService damageReportService;

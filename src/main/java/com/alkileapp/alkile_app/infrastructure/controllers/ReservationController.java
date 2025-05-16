@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/reservations")
+@RequestMapping("/api/alkile/reservations")
 public class ReservationController {
 
     private final IReservationService reservationService;
