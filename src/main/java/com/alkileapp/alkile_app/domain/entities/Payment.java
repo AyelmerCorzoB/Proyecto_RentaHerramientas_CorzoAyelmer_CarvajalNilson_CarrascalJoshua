@@ -27,10 +27,16 @@ public class Payment {
     @Column(name = "payment_date", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime paymentDate;
 
+   @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "VARCHAR(20) DEFAULT 'Completed'")
-    private PaymentStatus status;
+    private PaymentStatus status; // Usa enum o valor por defecto en lógica
 
+    @PrePersist
+    public void prePersist() {
+        if (status == null) {
+            status = PaymentStatus.COMPLETED;
+        }
+    }
     public enum PaymentStatus {
         COMPLETED, PENDING, FAILED
     }

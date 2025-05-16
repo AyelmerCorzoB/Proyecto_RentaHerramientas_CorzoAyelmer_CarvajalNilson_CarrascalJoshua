@@ -1,36 +1,59 @@
 package com.alkileapp.alkile_app.domain.dto;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class ApiError implements Serializable {
-    
-    private String backedMessage;
+public class ApiError {
+    private String backendMessage;
+    private String url;
+    private String method;
+    private LocalDateTime timestamp;
     private String message;
-    private int httpCode;
-    private LocalDateTime time;
-    public String getBackedMessage() {
-        return backedMessage;
+
+    public ApiError(String message, String backendMessage, String url, String method) {
+        this.message = message;
+        this.backendMessage = backendMessage;
+        this.url = url;
+        this.method = method;
+        this.timestamp = LocalDateTime.now();
     }
-    public void setBackedMessage(String backedMessage) {
-        this.backedMessage = backedMessage;
+
+    public String getBackendMessage() {
+        return backendMessage;
     }
+
+    public void setBackendMessage(String backendMessage) {
+        this.backendMessage = backendMessage;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+
     public String getMessage() {
         return message;
     }
+
     public void setMessage(String message) {
         this.message = message;
-    }
-    public int getHttpCode() {
-        return httpCode;
-    }
-    public void setHttpCode(int httpCode) {
-        this.httpCode = httpCode;
-    }
-    public LocalDateTime getTime() {
-        return time;
-    }
-    public void setTime(LocalDateTime time) {
-        this.time = time;
     }
 }
