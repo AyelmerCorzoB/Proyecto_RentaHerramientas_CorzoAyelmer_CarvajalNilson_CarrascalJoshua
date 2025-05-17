@@ -1,8 +1,10 @@
 package com.alkileapp.alkile_app.infrastructure.controllers;
 
+import com.alkileapp.alkile_app.application.services.IInvoiceService;
 import com.alkileapp.alkile_app.application.services.IPaymentService;
 import com.alkileapp.alkile_app.application.services.IReservationService;
 import com.alkileapp.alkile_app.domain.dto.PaymentDto;
+import com.alkileapp.alkile_app.domain.entities.Invoice;
 import com.alkileapp.alkile_app.domain.entities.Payment;
 import com.alkileapp.alkile_app.domain.entities.Reservation;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +19,13 @@ public class PaymentController {
 
     private final IPaymentService paymentService;
     private final IReservationService reservationService;
+    private final IInvoiceService invoiceService;
 
-    public PaymentController(IPaymentService paymentService, IReservationService reservationService) {
+    public PaymentController(IPaymentService paymentService, IReservationService reservationService,
+            IInvoiceService invoiceService) {
         this.paymentService = paymentService;
         this.reservationService = reservationService;
+        this.invoiceService = invoiceService;
     }
 
     @GetMapping
@@ -43,6 +48,12 @@ public class PaymentController {
     public ResponseEntity<PaymentDto> create(@RequestBody PaymentDto paymentDto) {
         Payment payment = convertToEntity(paymentDto);
         Payment saved = paymentService.save(payment);
+
+        Invoice invoice = new Invoice();
+        invoice.setPayment(saved);
+        invoice.setDetails("Factura generada para la reserva ID: " + payment.getReservation().getId());
+        invoiceService.save(invoice);
+
         return ResponseEntity.ok(convertToDto(saved));
     }
 
@@ -74,8 +85,7 @@ public class PaymentController {
                 payment.getPaymentMethod(),
                 payment.getTransactionId(),
                 payment.getPaymentDate(),
-                payment.getStatus().name()
-        );
+                payment.getStatus().name());
     }
 
     private Payment convertToEntity(PaymentDto dto) {

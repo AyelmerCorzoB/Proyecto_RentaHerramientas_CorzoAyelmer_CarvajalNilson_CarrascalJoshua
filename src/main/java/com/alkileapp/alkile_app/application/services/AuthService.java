@@ -1,20 +1,22 @@
 package com.alkileapp.alkile_app.application.services;
 
+import com.alkileapp.alkile_app.application.security.JwtService;
 import com.alkileapp.alkile_app.domain.dto.AuthRequest;
 import com.alkileapp.alkile_app.domain.dto.AuthResponse;
 import com.alkileapp.alkile_app.domain.dto.RegisterRequest;
 import com.alkileapp.alkile_app.domain.entities.Role;
 import com.alkileapp.alkile_app.domain.entities.User;
 import com.alkileapp.alkile_app.infrastructure.repository.Role.RoleRepository;
-import com.alkileapp.alkile_app.application.security.JwtService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.List;
 
 @Service
 public class AuthService {
@@ -24,47 +26,54 @@ public class AuthService {
     private final IUserService userService;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final UserDetailsService userDetailsService;
 
-    public AuthService(AuthenticationManager authenticationManager, 
-                     JwtService jwtService, 
-                     IUserService userService,
-                     PasswordEncoder passwordEncoder,
-                     RoleRepository roleRepository) {
+    @Autowired
+    public AuthService(
+            AuthenticationManager authenticationManager,
+            JwtService jwtService,
+            IUserService userService,
+            PasswordEncoder passwordEncoder,
+            RoleRepository roleRepository,
+            UserDetailsService userDetailsService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
+        this.userDetailsService = userDetailsService;
     }
 
-    public AuthResponse authenticate(AuthRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.username(),
-                        request.password()
-                )
-        );
-        
-        User user = userService.findOneByUsername(request.username())
-                .orElseThrow();
-        
-        String jwtToken = jwtService.generateToken(user);
-        
-        return new AuthResponse(jwtToken);
+    public AuthResponse login(String username, String password) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, password));
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+        String token = jwtService.generateToken(userDetails);
+
+        String role = userDetails.getAuthorities().stream()
+                .findFirst()
+                .map(grantedAuthority -> grantedAuthority.getAuthority().replace("ROLE_", ""))
+                .orElseThrow(() -> new RuntimeException("User has no role assigned"));
+
+        return new AuthResponse(token, role);
     }
 
     public AuthResponse register(RegisterRequest request) {
-       
         if (userService.findOneByUsername(request.username()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new IllegalArgumentException("Username already exists");
         }
 
         if (userService.existsByEmail(request.email())) {
-            throw new RuntimeException("Email already in use");
+            throw new IllegalArgumentException("Email already in use");
         }
 
-        Role userRole = roleRepository.findByName("ADMIN")
-    .orElseThrow(() -> new RuntimeException("Role ADMIN not found"));
+        // Buscar rol por defecto
+        Role userRole = roleRepository.findByName("CUSTOMER")  // <-- Rol por defecto
+                .orElseThrow(() -> new RuntimeException("Default role not found"));
+
+        // Crear nuevo usuario
         User user = new User();
         user.setUsername(request.username());
         user.setEmail(request.email());
@@ -79,6 +88,8 @@ public class AuthService {
 
         String jwtToken = jwtService.generateToken(savedUser);
 
-        return new AuthResponse(jwtToken);
+        String role = userRole.getName();
+
+        return new AuthResponse(jwtToken, role);
     }
 }

@@ -70,8 +70,7 @@ public class CategoryController {
                 category.getId(),
                 category.getName(),
                 category.getDescription(),
-                tools
-        );
+                tools);
     }
 
     private ToolDto convertToolToDto(Tool tool) {
@@ -87,9 +86,6 @@ public class CategoryController {
                         tool.getSupplier().getTaxId(),
                         tool.getSupplier().getCompany(),
                         tool.getSupplier().getRating(),
-                        tool.getSupplier().getUser().getId()
-                )
-        );
+                        tool.getSupplier().getUser().getId()));
     }
-
 }

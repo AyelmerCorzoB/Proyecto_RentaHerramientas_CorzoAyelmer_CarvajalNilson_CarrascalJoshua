@@ -2,8 +2,11 @@ package com.alkileapp.alkile_app.infrastructure.repository.Reservation;
 
 import com.alkileapp.alkile_app.application.services.IReservationService;
 import com.alkileapp.alkile_app.domain.entities.Reservation;
+import com.alkileapp.alkile_app.domain.entities.Tool;
+
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +31,27 @@ public class ReservationServiceImp implements IReservationService {
 
     @Override
     public Reservation save(Reservation reservation) {
+        Tool tool = reservation.getTool();
+        LocalDate startDate = reservation.getStartDate();
+        LocalDate endDate = reservation.getEndDate();
+
+        if (tool == null || tool.getId() == null) {
+            throw new RuntimeException("La herramienta no tiene un ID válido.");
+        }
+
+        List<Reservation> existingReservations = reservationRepository.findByToolId(tool.getId());
+
+        for (Reservation existing : existingReservations) {
+            if (!existing.getStatus().equals(Reservation.ReservationStatus.CANCELED)) {
+                boolean overlaps = !endDate.isBefore(existing.getStartDate()) &&
+                        !startDate.isAfter(existing.getEndDate());
+
+                if (overlaps) {
+                    throw new RuntimeException("La herramienta no está disponible en las fechas seleccionadas.");
+                }
+            }
+        }
+
         return reservationRepository.save(reservation);
     }
 
