@@ -65,4 +65,33 @@ public class InitialDataConfig {
             }
         };
     }
+
+    @Bean
+    @Order(3)
+    CommandLineRunner initSupplierUser(IUserService userService, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+        return args -> {
+            if (userService.findOneByUsername("prove").isEmpty()) {
+                Optional<Role> adminRoleOpt = roleRepository.findByName("SUPPLIER");
+                if (adminRoleOpt.isPresent()) {
+                    Role adminRole = adminRoleOpt.get();
+                    
+                    User adminUser = new User();
+                    adminUser.setUsername("supplier");
+                    adminUser.setEmail("supplier@alkileapp.com");
+                    adminUser.setPassword(passwordEncoder.encode("123456789"));
+                    adminUser.setName("Proveedor");
+                    adminUser.setAddress("Dirección Proveedor");
+                    adminUser.setPhone("1234567890");
+                    adminUser.setActive(true);
+                    adminUser.setRoles(Collections.singleton(adminRole));
+                    
+                    userService.save(adminUser);
+                    
+                    System.out.println("Usuario Proveedor creado con éxito.");
+                }
+            } else {
+                System.out.println("El usuario proveedor ya existe.");
+            }
+        };
+    }
 }
