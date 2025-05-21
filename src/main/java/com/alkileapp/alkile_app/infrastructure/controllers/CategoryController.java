@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -74,18 +75,26 @@ public class CategoryController {
     }
 
     private ToolDto convertToolToDto(Tool tool) {
-        return new ToolDto(
-                tool.getId(),
-                tool.getName(),
-                tool.getDescription(),
-                tool.getDailyCost(),
-                tool.getStock(),
-                tool.getCategory().getId(),
-                new SupplierDto(
-                        tool.getSupplier().getId(),
-                        tool.getSupplier().getTaxId(),
-                        tool.getSupplier().getCompany(),
-                        tool.getSupplier().getRating(),
-                        tool.getSupplier().getUser().getId()));
-    }
+    Long categoryId = Optional.ofNullable(tool.getCategory())
+                              .map(Category::getId)
+                              .orElse(null);
+
+    SupplierDto supplierDto = new SupplierDto(
+        tool.getSupplier().getId(),
+        tool.getSupplier().getTaxId(),
+        tool.getSupplier().getCompany(),
+        tool.getSupplier().getRating(),
+        tool.getSupplier().getUser().getId()
+    );
+
+    return new ToolDto(
+        tool.getId(),
+        tool.getName(),
+        tool.getDescription(),
+        tool.getDailyCost(),
+        tool.getStock(),
+        categoryId,
+        supplierDto
+    );
+}
 }

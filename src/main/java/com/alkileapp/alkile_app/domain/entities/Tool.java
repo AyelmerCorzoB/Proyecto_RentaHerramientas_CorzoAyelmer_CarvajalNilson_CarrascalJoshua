@@ -17,7 +17,7 @@ public class Tool {
     private Supplier supplier;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "category_id", nullable = true)
     private Category category;
 
     @Column(nullable = false, length = 100)

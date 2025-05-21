@@ -3,11 +3,13 @@ package com.alkileapp.alkile_app.infrastructure.controllers;
 import com.alkileapp.alkile_app.application.services.IToolService;
 import com.alkileapp.alkile_app.domain.dto.SupplierDto;
 import com.alkileapp.alkile_app.domain.dto.ToolDto;
+import com.alkileapp.alkile_app.domain.entities.Category;
 import com.alkileapp.alkile_app.domain.entities.Tool;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -61,20 +63,24 @@ public class ToolController {
     }
 
     private ToolDto convertToDto(Tool tool) {
-        return new ToolDto(
-                tool.getId(),
-                tool.getName(),
-                tool.getDescription(),
-                tool.getDailyCost(),
-                tool.getStock(),
-                tool.getCategory().getId(),
-                new SupplierDto(
-                        tool.getSupplier().getId(),
-                        tool.getSupplier().getTaxId(),
-                        tool.getSupplier().getCompany(),
-                        tool.getSupplier().getRating(),
-                        tool.getSupplier().getUser().getId()
-                )
-        );
-    }
+    Long categoryId = Optional.ofNullable(tool.getCategory())
+                              .map(Category::getId)
+                              .orElse(null);
+
+    return new ToolDto(
+        tool.getId(),
+        tool.getName(),
+        tool.getDescription(),
+        tool.getDailyCost(),
+        tool.getStock(),
+        categoryId,
+        new SupplierDto(
+            tool.getSupplier().getId(),
+            tool.getSupplier().getTaxId(),
+            tool.getSupplier().getCompany(),
+            tool.getSupplier().getRating(),
+            tool.getSupplier().getUser().getId()
+        )
+    );
+}
 }
