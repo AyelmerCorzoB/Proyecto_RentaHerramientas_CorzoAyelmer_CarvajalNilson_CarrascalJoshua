@@ -75,17 +75,17 @@ public class InitialDataConfig {
                 if (adminRoleOpt.isPresent()) {
                     Role adminRole = adminRoleOpt.get();
                     
-                    User adminUser = new User();
-                    adminUser.setUsername("supplier");
-                    adminUser.setEmail("supplier@alkileapp.com");
-                    adminUser.setPassword(passwordEncoder.encode("123456789"));
-                    adminUser.setName("Proveedor");
-                    adminUser.setAddress("Dirección Proveedor");
-                    adminUser.setPhone("1234567890");
-                    adminUser.setActive(true);
-                    adminUser.setRoles(Collections.singleton(adminRole));
+                    User supplierUser = new User();
+                    supplierUser.setUsername("supplier");
+                    supplierUser.setEmail("supplier@alkileapp.com");
+                    supplierUser.setPassword(passwordEncoder.encode("123456789"));
+                    supplierUser.setName("Proveedor");
+                    supplierUser.setAddress("Dirección Proveedor");
+                    supplierUser.setPhone("1234567890");
+                    supplierUser.setActive(true);
+                    supplierUser.setRoles(Collections.singleton(adminRole));
                     
-                    userService.save(adminUser);
+                    userService.save(supplierUser);
                     
                     System.out.println("Usuario Proveedor creado con éxito.");
                 }
