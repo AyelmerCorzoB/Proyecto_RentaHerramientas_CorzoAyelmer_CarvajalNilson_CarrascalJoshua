@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generar PDF</title>
+</head>
+<body>
+
+<button 
+    id="generate-pdf-btn"
+    class="w-full bg-emerald-500 text-white py-3 px-4 rounded-md hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition font-semibold">
+    Proceder al Pago
+</button>
+
+<script>
+document.getElementById('generate-pdf-btn').addEventListener('click', async function() {
+    const btn = this;
+    try {
+        
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+        btn.disabled = true;
+
+        
+        const clientName = "Cliente Ejemplo";
+        const amount = "84.96"; 
+
+     
+        const response = await fetch('http://localhost:8080/api/payments/generate-receipt', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/pdf'
+            },
+            body: `clientName=${encodeURIComponent(clientName)}&amount=${encodeURIComponent(amount)}`
+        });
+
+        if (!response.ok) {
+            const errorData = await response.text();
+            throw new Error(`Error del servidor: ${response.status} - ${errorData}`);
+        }
+
+     
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'comprobante_pago.pdf';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert(`Error al generar el comprobante: ${error.message}`);
+    } finally {
+    
+        btn.innerHTML = 'Proceder al Pago';
+        btn.disabled = false;
+    }
+});
+</script>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+</body>
+</html>
