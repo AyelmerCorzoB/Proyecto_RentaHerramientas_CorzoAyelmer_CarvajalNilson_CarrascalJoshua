@@ -1,4 +1,3 @@
-
 package com.alkileapp.alkile_app.infrastructure.controllers;
 
 import com.alkileapp.alkile_app.application.services.IReservationService;
@@ -6,28 +5,45 @@ import com.alkileapp.alkile_app.application.services.IToolService;
 import com.alkileapp.alkile_app.domain.dto.SupplierDto;
 import com.alkileapp.alkile_app.domain.dto.ToolDto;
 import com.alkileapp.alkile_app.domain.entities.Category;
+import com.alkileapp.alkile_app.domain.entities.Supplier;
 import com.alkileapp.alkile_app.domain.entities.Tool;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/alkile/tools")
-
 public class ToolController {
 
   private final IToolService toolService;
-
   private final IReservationService reservationService;
+  private final String UPLOAD_DIR = "uploads/";
 
   public ToolController(IToolService toolService, IReservationService reservationService) {
     this.toolService = toolService;
     this.reservationService = reservationService;
+
+    // Crear directorio de uploads si no existe
+    try {
+      Files.createDirectories(Paths.get(UPLOAD_DIR));
+    } catch (IOException e) {
+      throw new RuntimeException("No se pudo crear el directorio de uploads", e);
+    }
   }
 
   @GetMapping
@@ -46,19 +62,79 @@ public class ToolController {
         .orElse(ResponseEntity.notFound().build());
   }
 
-  @PostMapping
-  public ResponseEntity<Tool> create(@RequestBody Tool tool) {
-    return ResponseEntity.ok(toolService.save(tool));
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<?> createToolWithImages(
+      @RequestParam("name") String name,
+      @RequestParam("description") String description,
+      @RequestParam("dailyCost") double dailyCost,
+      @RequestParam("stock") int stock,
+      @RequestParam("categoryId") Long categoryId,
+      @RequestParam(value = "supplierId", required = false) Long supplierId,
+      @RequestParam("images") List<MultipartFile> images) {
+
+    try {
+      Tool tool = new Tool();
+      tool.setName(name);
+      tool.setDescription(description);
+      tool.setDailyCost(dailyCost);
+      tool.setStock(stock);
+
+      Category category = new Category();
+      category.setId(categoryId);
+      tool.setCategory(category);
+
+      if (supplierId != null) {
+        Supplier supplier = new Supplier();
+        supplier.setId(supplierId);
+        tool.setSupplier(supplier);
+      }
+
+      // Procesar imágenes
+      if (images != null && !images.isEmpty()) {
+        String imagePaths = images.stream()
+            .map(this::uploadImage)
+            .collect(Collectors.joining(","));
+        tool.setImageUrl(imagePaths);
+      }
+
+      Tool savedTool = toolService.save(tool);
+      return ResponseEntity.ok(convertToDto(savedTool));
+
+    } catch (Exception e) {
+      return ResponseEntity.badRequest()
+          .body(Map.of("message", "Error al crear herramienta: " + e.getMessage()));
+    }
   }
 
-  @PutMapping("/{id}")
-  public ResponseEntity<ToolDto> update(@PathVariable Long id, @RequestBody Tool tool) {
+  @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<?> updateToolWithImages(
+      @PathVariable Long id,
+      @RequestPart("tool") String toolJson,
+      @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+
     if (!toolService.existsById(id)) {
       return ResponseEntity.notFound().build();
     }
-    tool.setId(id);
-    Tool updatedTool = toolService.save(tool);
-    return ResponseEntity.ok(convertToDto(updatedTool));
+
+    try {
+      Tool tool = new ObjectMapper().readValue(toolJson, Tool.class);
+      tool.setId(id);
+
+      // Procesar imágenes si existen
+      if (images != null && !images.isEmpty()) {
+        String imagePaths = images.stream()
+            .map(this::uploadImage)
+            .collect(Collectors.joining(","));
+        tool.setImageUrl(imagePaths);
+      }
+
+      Tool updatedTool = toolService.save(tool);
+      return ResponseEntity.ok(convertToDto(updatedTool));
+
+    } catch (Exception e) {
+      return ResponseEntity.badRequest()
+          .body(Map.of("message", "Error al actualizar herramienta: " + e.getMessage()));
+    }
   }
 
   @DeleteMapping("/{id}")
@@ -75,18 +151,36 @@ public class ToolController {
     }
   }
 
+  private String uploadImage(MultipartFile file) {
+    try {
+      // Generar nombre único para el archivo
+      String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+      Path path = Paths.get(UPLOAD_DIR + fileName);
+
+      // Guardar el archivo
+      Files.copy(file.getInputStream(), path);
+
+      // Retornar la ruta relativa o completa según tu configuración
+      return "/" + UPLOAD_DIR + fileName;
+
+    } catch (IOException e) {
+      throw new RuntimeException("Error al guardar la imagen: " + e.getMessage(), e);
+    }
+  }
+
   private ToolDto convertToDto(Tool tool) {
     Long categoryId = Optional.ofNullable(tool.getCategory())
         .map(Category::getId)
         .orElse(null);
+
     return new ToolDto(
         tool.getId(),
         tool.getName(),
         tool.getDescription(),
         tool.getDailyCost(),
         tool.getStock(),
+        tool.getImageUrl(), // Asegúrate que Tool tiene getImageUrl()
         categoryId,
-
         new SupplierDto(
             tool.getSupplier().getId(),
             tool.getSupplier().getTaxId(),

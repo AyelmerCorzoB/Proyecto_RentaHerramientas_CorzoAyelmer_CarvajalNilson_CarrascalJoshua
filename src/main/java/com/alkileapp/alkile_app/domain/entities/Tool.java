@@ -33,7 +33,7 @@ public class Tool {
     private Integer stock = 1;
 
     @Column(name = "image_url", length = 255)
-    private String imageUrl;
+    private String ImageUrl;
 
     @Column(name = "creation_date", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime creationDate;
@@ -104,11 +104,11 @@ public class Tool {
     }
 
     public String getImageUrl() {
-        return imageUrl;
+        return ImageUrl;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setImageUrl(String ImageUrl) {
+        this.ImageUrl = ImageUrl;
     }
 
     public LocalDateTime getCreationDate() {

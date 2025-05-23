@@ -93,6 +93,7 @@ public class CategoryController {
         tool.getDescription(),
         tool.getDailyCost(),
         tool.getStock(),
+        tool.getImageUrl(),
         categoryId,
         supplierDto
     );
