@@ -7,6 +7,7 @@ import com.alkileapp.alkile_app.domain.dto.ReservationDto;
 import com.alkileapp.alkile_app.domain.entities.Customer;
 import com.alkileapp.alkile_app.domain.entities.Reservation;
 import com.alkileapp.alkile_app.domain.entities.Tool;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +22,8 @@ public class ReservationController {
     private final ICustomerService customerService;
     private final IToolService toolService;
 
-    public ReservationController(IReservationService reservationService, ICustomerService customerService, IToolService toolService) {
+    public ReservationController(IReservationService reservationService, ICustomerService customerService,
+            IToolService toolService) {
         this.reservationService = reservationService;
         this.customerService = customerService;
         this.toolService = toolService;
@@ -34,8 +36,6 @@ public class ReservationController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(reservations);
     }
-
-
 
     @GetMapping("/{id}")
     public ResponseEntity<ReservationDto> getById(@PathVariable Long id) {
@@ -72,6 +72,18 @@ public class ReservationController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<ReservationDto> cancelReservation(@PathVariable Long id) {
+        try {
+            Reservation canceledReservation = reservationService.cancelReservation(id);
+            return ResponseEntity.ok(convertToDto(canceledReservation));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
     private ReservationDto convertToDto(Reservation reservation) {
         return new ReservationDto(
                 reservation.getId(),
@@ -80,8 +92,7 @@ public class ReservationController {
                 reservation.getStartDate(),
                 reservation.getEndDate(),
                 reservation.getStatus().name(),
-                reservation.getCreationDate()
-        );
+                reservation.getCreationDate());
     }
 
     private Reservation convertToEntity(ReservationDto dto) {
