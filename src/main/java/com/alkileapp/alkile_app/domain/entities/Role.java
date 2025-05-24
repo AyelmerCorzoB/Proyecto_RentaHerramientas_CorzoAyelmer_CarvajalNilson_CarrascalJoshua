@@ -1,39 +1,33 @@
 package com.alkileapp.alkile_app.domain.entities;
 
-import java.util.List;
+import jakarta.persistence.*;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-
 @Entity
 @Table(name = "roles")
 public class Role {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "roleName", nullable = false, unique = true, length = 20)
-    private String roleName;
+    @Column(name = "role_name", nullable = false, unique = true)
+    private String name;
 
+    @Column(length = 255)
     private String description;
 
     @JsonIgnoreProperties({"roles", "handler", "hibernateLazyInitializer"})
     @ManyToMany(mappedBy = "roles")
     private Set<User> users;
 
-    @Embedded
-    Audit audit = new Audit();
-    public Role() {
+    public Role() {}
+
+    public Role(String name,String description) {
+        this.name = name;
+        this.description = description;
     }
 
     public Long getId() {
@@ -44,12 +38,12 @@ public class Role {
         this.id = id;
     }
 
-    public String getRoleroleName() {
-        return roleName;
+    public String getName() {
+        return name;
     }
 
-    public void setRoleroleName(String roleName) {
-        this.roleName = roleName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {
@@ -60,5 +54,11 @@ public class Role {
         this.description = description;
     }
 
-    
+    public Set<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(Set<User> users) {
+        this.users = users;
+    }
 }

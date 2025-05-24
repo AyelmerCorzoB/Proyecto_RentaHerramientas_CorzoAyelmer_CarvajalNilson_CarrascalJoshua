@@ -1,40 +1,74 @@
 package com.alkileapp.alkile_app.domain.exceptions;
 
-import java.time.LocalDateTime;
-
+import com.alkileapp.alkile_app.domain.dto.ApiError;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.alkileapp.alkile_app.domain.dto.ApiError;
-
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handlerGenericException(Exception exception, HttpServletRequest request){
-
-        ApiError error = new ApiError();
-        error.setMessage("Error interno en el servidor, vuelva a intentarlo");
-        error.setBackedMessage(exception.getLocalizedMessage());
-        error.setTime(LocalDateTime.now());
-        error.setHttpCode(500);
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    public ResponseEntity<ApiError> handleGenericException(Exception ex, HttpServletRequest request) {
+        ApiError apiError = new ApiError(
+            ex.getMessage(),
+            ex.getClass().getSimpleName(),
+            request.getRequestURL().toString(),
+            request.getMethod()
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiError);
+    }
+    
+    @ExceptionHandler(io.jsonwebtoken.security.SecurityException.class)
+    public ResponseEntity<ApiError> handleJwtException(io.jsonwebtoken.security.SecurityException ex, HttpServletRequest request) {
+        ApiError apiError = new ApiError(
+            "Error en el token JWT: " + ex.getMessage(),
+            ex.getClass().getSimpleName(),
+            request.getRequestURL().toString(),
+            request.getMethod()
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiError);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handlerMethodArgumentNotValidException(MethodArgumentNotValidException exception, HttpServletRequest request){
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
 
-        ApiError error = new ApiError();
-        error.setMessage("Error: la petición enviada posee un formato incorrecto");
-        error.setBackedMessage(exception.getLocalizedMessage());
-        error.setTime(LocalDateTime.now());
-        error.setHttpCode(400);
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest request) {
+        ApiError apiError = new ApiError(
+            "Validation error: " + ex.getMessage(),
+            ex.getClass().getSimpleName(),
+            request.getRequestURL().toString(),
+            request.getMethod()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
+    }
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
+        ApiError apiError = new ApiError(
+            "Access denied: " + ex.getMessage(),
+            ex.getClass().getSimpleName(),
+            request.getRequestURL().toString(),
+            request.getMethod()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiError);
     }
 }
