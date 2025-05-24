@@ -1,12 +1,14 @@
 package com.alkileapp.alkile_app.infrastructure.controllers;
 
 import com.alkileapp.alkile_app.application.services.IReservationService;
+import com.alkileapp.alkile_app.application.services.ISupplierService;
 import com.alkileapp.alkile_app.application.services.IToolService;
 import com.alkileapp.alkile_app.domain.dto.SupplierDto;
 import com.alkileapp.alkile_app.domain.dto.ToolDto;
 import com.alkileapp.alkile_app.domain.entities.Category;
 import com.alkileapp.alkile_app.domain.entities.Supplier;
 import com.alkileapp.alkile_app.domain.entities.Tool;
+import com.alkileapp.alkile_app.domain.entities.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -33,12 +35,13 @@ public class ToolController {
   private final IToolService toolService;
   private final IReservationService reservationService;
   private final String UPLOAD_DIR = "uploads/";
+  private final ISupplierService supplierService;
 
-  public ToolController(IToolService toolService, IReservationService reservationService) {
+  public ToolController(IToolService toolService, IReservationService reservationService,
+      ISupplierService supplierService) {
     this.toolService = toolService;
     this.reservationService = reservationService;
-
-    // Crear directorio de uploads si no existe
+    this.supplierService = supplierService;
     try {
       Files.createDirectories(Paths.get(UPLOAD_DIR));
     } catch (IOException e) {
@@ -64,32 +67,22 @@ public class ToolController {
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<?> createToolWithImages(
-      @RequestParam("name") String name,
-      @RequestParam("description") String description,
-      @RequestParam("dailyCost") double dailyCost,
-      @RequestParam("stock") int stock,
-      @RequestParam("categoryId") Long categoryId,
-      @RequestParam(value = "supplierId", required = false) Long supplierId,
-      @RequestParam("images") List<MultipartFile> images) {
+      @RequestPart("tool") String toolJson,
+      @RequestPart(value = "images", required = false) List<MultipartFile> images) {
 
     try {
-      Tool tool = new Tool();
-      tool.setName(name);
-      tool.setDescription(description);
-      tool.setDailyCost(dailyCost);
-      tool.setStock(stock);
+      Tool tool = new ObjectMapper().readValue(toolJson, Tool.class);
 
-      Category category = new Category();
-      category.setId(categoryId);
-      tool.setCategory(category);
+      if (tool.getSupplier() != null && tool.getSupplier().getId() != null) {
+        Optional<Supplier> supplierOpt = supplierService.findById(tool.getSupplier().getId());
+        if (supplierOpt.isEmpty() || supplierOpt.get().getUser() == null) {
+          return ResponseEntity.badRequest()
+              .body(Map.of("message", "El proveedor seleccionado no es válido o no tiene usuario asociado"));
+        }
 
-      if (supplierId != null) {
-        Supplier supplier = new Supplier();
-        supplier.setId(supplierId);
-        tool.setSupplier(supplier);
+        tool.setSupplier(supplierOpt.get());
       }
 
-      // Procesar imágenes
       if (images != null && !images.isEmpty()) {
         String imagePaths = images.stream()
             .map(this::uploadImage)
@@ -120,7 +113,6 @@ public class ToolController {
       Tool tool = new ObjectMapper().readValue(toolJson, Tool.class);
       tool.setId(id);
 
-      // Procesar imágenes si existen
       if (images != null && !images.isEmpty()) {
         String imagePaths = images.stream()
             .map(this::uploadImage)
@@ -153,14 +145,11 @@ public class ToolController {
 
   private String uploadImage(MultipartFile file) {
     try {
-      // Generar nombre único para el archivo
       String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
       Path path = Paths.get(UPLOAD_DIR + fileName);
 
-      // Guardar el archivo
       Files.copy(file.getInputStream(), path);
 
-      // Retornar la ruta relativa o completa según tu configuración
       return "/" + UPLOAD_DIR + fileName;
 
     } catch (IOException e) {
@@ -173,19 +162,26 @@ public class ToolController {
         .map(Category::getId)
         .orElse(null);
 
+    SupplierDto supplierDto = null;
+    if (tool.getSupplier() != null) {
+      supplierDto = new SupplierDto(
+          tool.getSupplier().getId(),
+          tool.getSupplier().getTaxId(),
+          tool.getSupplier().getCompany(),
+          tool.getSupplier().getRating(),
+          Optional.ofNullable(tool.getSupplier().getUser())
+              .map(User::getId)
+              .orElse(null));
+    }
+
     return new ToolDto(
         tool.getId(),
         tool.getName(),
         tool.getDescription(),
         tool.getDailyCost(),
         tool.getStock(),
-        tool.getImageUrl(), // Asegúrate que Tool tiene getImageUrl()
+        tool.getImageUrl(),
         categoryId,
-        new SupplierDto(
-            tool.getSupplier().getId(),
-            tool.getSupplier().getTaxId(),
-            tool.getSupplier().getCompany(),
-            tool.getSupplier().getRating(),
-            tool.getSupplier().getUser().getId()));
+        supplierDto);
   }
 }
