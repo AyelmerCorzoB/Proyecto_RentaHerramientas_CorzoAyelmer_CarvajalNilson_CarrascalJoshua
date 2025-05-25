@@ -477,6 +477,6 @@ Devuelve objetos `ApiError` con información clara y útil de los errores, inclu
 
 ## 👥 **Autores**
 
-- Ayelmer Corzo  
+- Ayelmer Corzo Barbosa  
 - Nilson Carvajal  
 - Joshua Carrascal  
