@@ -37,6 +37,33 @@ public class ReservationController {
         return ResponseEntity.ok(reservations);
     }
 
+    @GetMapping
+    public ResponseEntity<List<ReservationDto>> getReservations(
+            @RequestHeader("userId") Long userId,
+            @RequestHeader("role") String role) {
+        List<Reservation> reservations;
+
+        switch (role.toUpperCase()) {
+            case "ADMIN":
+                reservations = reservationService.findAll();
+                break;
+            case "CUSTOMER":
+                reservations = reservationService.findByCustomerId(userId);
+                break;
+            case "SUPPLIER":
+                reservations = reservationService.findBySupplierId(userId);
+                break;
+            default:
+                return ResponseEntity.status(403).build();
+        }
+
+        List<ReservationDto> dtos = reservations.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ReservationDto> getById(@PathVariable Long id) {
         return reservationService.findById(id)
@@ -82,6 +109,24 @@ public class ReservationController {
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(null);
         }
+    }
+
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<List<ReservationDto>> getReservationsByCustomer(@PathVariable Long customerId) {
+        List<Reservation> reservations = reservationService.findByCustomerId(customerId);
+        List<ReservationDto> dtos = reservations.stream()
+                .map(this::convertToDto)
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/supplier/{supplierId}")
+    public ResponseEntity<List<ReservationDto>> getReservationsBySupplier(@PathVariable Long supplierId) {
+        List<Reservation> reservations = reservationService.findBySupplierId(supplierId);
+        List<ReservationDto> dtos = reservations.stream()
+                .map(this::convertToDto)
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     private ReservationDto convertToDto(Reservation reservation) {

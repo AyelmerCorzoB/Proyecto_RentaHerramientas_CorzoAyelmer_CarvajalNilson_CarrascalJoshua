@@ -71,5 +71,14 @@ public class ReservationServiceImp implements IReservationService {
     public boolean existsById(Long id) {
         return reservationRepository.existsById(id);
     }
+    @Override
+    public List<Reservation> findByCustomerId(Long customerId) {
+        return reservationRepository.findByCustomerId(customerId);
+    }
+
+    @Override
+    public List<Reservation> findBySupplierId(Long supplierId) {
+        return reservationRepository.findByTool_Supplier_Id(supplierId);
+    }
 }
 

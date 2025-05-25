@@ -10,4 +10,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     List<Reservation> findByToolId(Long toolId);
 
+    List<Reservation> findByCustomerId(Long customerId);
+
+    List<Reservation> findByTool_Supplier_Id(Long supplierId);
 }
