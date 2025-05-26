@@ -1,7 +1,6 @@
 package com.alkileapp.alkile_app.domain.entities;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "customers")
@@ -20,8 +19,17 @@ public class Customer {
     private User user;
 
     @Embedded
-    private Audit audit;
+    private Audit audit = new Audit(); // CORRECCIÓN: Inicializar audit
 
+    public Long getUserId() {
+        return user != null ? user.getId() : null;
+    }
+
+    public String getUserName() {
+        return user != null ? user.getName() : null;
+    }
+
+    // Getters y setters
     public Long getId() {
         return id;
     }
@@ -53,5 +61,4 @@ public class Customer {
     public void setAudit(Audit audit) {
         this.audit = audit;
     }
-
 }

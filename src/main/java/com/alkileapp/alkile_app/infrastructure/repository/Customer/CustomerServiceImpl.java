@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional // CORRECCIÓN: Agregar transaccional a nivel de clase
 public class CustomerServiceImpl implements ICustomerService {
 
     private final CustomerRepository customerRepository;
@@ -38,18 +39,24 @@ public class CustomerServiceImpl implements ICustomerService {
     @Override
     @Transactional(readOnly = true)
     public Optional<Customer> findByUserId(Long userId) {
-        return customerRepository.findByUserId(userId);
+        // CORRECCIÓN: Usar método correcto
+        return customerRepository.findById(userId);
     }
 
     @Override
-    @Transactional
     public Customer save(Customer customer) {
+        // CORRECCIÓN: Validar antes de guardar
+        if (customer.getUser() == null) {
+            throw new IllegalArgumentException("Customer must have a user");
+        }
         return customerRepository.save(customer);
     }
 
     @Override
-    @Transactional
     public void deleteById(Long id) {
+        if (!customerRepository.existsById(id)) {
+            throw new IllegalArgumentException("Customer not found with id: " + id);
+        }
         customerRepository.deleteById(id);
     }
 

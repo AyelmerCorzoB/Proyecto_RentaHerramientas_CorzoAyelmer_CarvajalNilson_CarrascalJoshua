@@ -1,7 +1,6 @@
 package com.alkileapp.alkile_app.domain.entities;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "suppliers")
@@ -21,7 +20,6 @@ public class Supplier {
     private Double rating;
 
     @OneToOne
-    @MapsId
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

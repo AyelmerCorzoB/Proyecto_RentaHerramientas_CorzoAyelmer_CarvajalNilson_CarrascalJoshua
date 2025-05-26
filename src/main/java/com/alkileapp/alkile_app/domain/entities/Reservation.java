@@ -1,7 +1,12 @@
 package com.alkileapp.alkile_app.domain.entities;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalDateTime;
 import jakarta.validation.constraints.FutureOrPresent;
 
@@ -23,11 +28,11 @@ public class Reservation {
 
     @Column(name = "start_date", nullable = false)
     @FutureOrPresent
-    private LocalDate startDate;
+    private LocalDate startDate;  // Cambiado a LocalDate
 
     @Column(name = "end_date", nullable = false)
     @FutureOrPresent
-    private LocalDate endDate;
+    private LocalDate endDate;    // Cambiado a LocalDate
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
