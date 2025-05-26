@@ -42,7 +42,7 @@ public class PdfService {
                 contentStream.beginText();
                 contentStream.setFont(PDType1Font.HELVETICA, 12);
                 contentStream.newLineAtOffset(50, 720);
-                contentStream.showText("Cliente: " + reservation.getCustomer().getUserName());
+                contentStream.showText("Cliente: " + reservation.getCustomer());
                 contentStream.newLineAtOffset(0, -15);
                 contentStream.showText("Herramienta: " + reservation.getTool().getName());
                 contentStream.newLineAtOffset(0, -15);

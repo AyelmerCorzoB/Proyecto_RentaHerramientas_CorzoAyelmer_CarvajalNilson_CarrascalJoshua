@@ -1,12 +1,10 @@
 package com.alkileapp.alkile_app.infrastructure.controllers;
 
 import com.alkileapp.alkile_app.application.services.IReservationService;
-import com.alkileapp.alkile_app.application.services.ISupplierService;
 import com.alkileapp.alkile_app.application.services.IToolService;
-import com.alkileapp.alkile_app.domain.dto.SupplierDto;
+import com.alkileapp.alkile_app.application.services.IUserService;
 import com.alkileapp.alkile_app.domain.dto.ToolDto;
 import com.alkileapp.alkile_app.domain.entities.Category;
-import com.alkileapp.alkile_app.domain.entities.Supplier;
 import com.alkileapp.alkile_app.domain.entities.Tool;
 import com.alkileapp.alkile_app.domain.entities.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,10 +33,10 @@ public class ToolController {
   private final IToolService toolService;
   private final IReservationService reservationService;
   private final String UPLOAD_DIR = "uploads/";
-  private final ISupplierService supplierService;
+  private final IUserService supplierService;
 
   public ToolController(IToolService toolService, IReservationService reservationService,
-      ISupplierService supplierService) {
+      IUserService supplierService) {
     this.toolService = toolService;
     this.reservationService = reservationService;
     this.supplierService = supplierService;
@@ -74,8 +72,8 @@ public class ToolController {
       Tool tool = new ObjectMapper().readValue(toolJson, Tool.class);
 
       if (tool.getSupplier() != null && tool.getSupplier().getId() != null) {
-        Optional<Supplier> supplierOpt = supplierService.findById(tool.getSupplier().getId());
-        if (supplierOpt.isEmpty() || supplierOpt.get().getUser() == null) {
+        Optional<User> supplierOpt = supplierService.findById(tool.getSupplier().getId());
+        if (supplierOpt.isEmpty() || supplierOpt.get().getName() == null) {
           return ResponseEntity.badRequest()
               .body(Map.of("message", "El proveedor seleccionado no es válido o no tiene usuario asociado"));
         }
@@ -162,17 +160,7 @@ public class ToolController {
         .map(Category::getId)
         .orElse(null);
 
-    SupplierDto supplierDto = null;
-    if (tool.getSupplier() != null) {
-      supplierDto = new SupplierDto(
-          tool.getSupplier().getId(),
-          tool.getSupplier().getTaxId(),
-          tool.getSupplier().getCompany(),
-          tool.getSupplier().getRating(),
-          Optional.ofNullable(tool.getSupplier().getUser())
-              .map(User::getId)
-              .orElse(null));
-    }
+    
 
     return new ToolDto(
         tool.getId(),
@@ -182,6 +170,6 @@ public class ToolController {
         tool.getStock(),
         tool.getImageUrl(),
         categoryId,
-        supplierDto);
+        tool.getSupplier());
   }
 }

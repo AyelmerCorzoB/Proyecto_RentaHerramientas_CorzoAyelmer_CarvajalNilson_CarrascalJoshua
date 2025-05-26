@@ -1,12 +1,13 @@
 package com.alkileapp.alkile_app.infrastructure.controllers;
 
-import com.alkileapp.alkile_app.application.services.ICustomerService;
+import com.alkileapp.alkile_app.application.services.IUserService;
 import com.alkileapp.alkile_app.application.services.IReservationService;
 import com.alkileapp.alkile_app.application.services.IToolService;
 import com.alkileapp.alkile_app.domain.dto.ReservationDto;
-import com.alkileapp.alkile_app.domain.entities.Customer;
 import com.alkileapp.alkile_app.domain.entities.Reservation;
 import com.alkileapp.alkile_app.domain.entities.Tool;
+import com.alkileapp.alkile_app.domain.entities.User;
+
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
@@ -29,10 +30,10 @@ public class ReservationController {
     private static final Logger log = LoggerFactory.getLogger(ReservationController.class);
 
     private final IReservationService reservationService;
-    private final ICustomerService customerService;
+    private final IUserService customerService;
     private final IToolService toolService;
 
-    public ReservationController(IReservationService reservationService, ICustomerService customerService,
+    public ReservationController(IReservationService reservationService, IUserService customerService,
             IToolService toolService) {
         this.reservationService = reservationService;
         this.customerService = customerService;
@@ -142,7 +143,7 @@ public class ReservationController {
         Objects.requireNonNull(dto.toolId(), "Tool ID cannot be null");
 
         // Load full Customer entity
-        Customer customer = customerService.findById(dto.customerId())
+        User customer = customerService.findById(dto.customerId())
                 .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + dto.customerId()));
 
         // Load full Tool entity

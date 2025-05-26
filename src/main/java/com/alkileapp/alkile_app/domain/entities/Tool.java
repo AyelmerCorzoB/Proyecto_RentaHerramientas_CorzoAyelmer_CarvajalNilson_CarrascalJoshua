@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Entity
 @Table(name = "tools")
 public class Tool {
@@ -13,11 +17,13 @@ public class Tool {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "supplier_id", nullable = false)
-    private Supplier supplier;
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties("toolsSupplied")
+    private User supplier;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = true)
+    @JsonBackReference
     private Category category;
 
     @Column(nullable = false, length = 100)
@@ -42,6 +48,7 @@ public class Tool {
     private boolean available = true;
 
     @OneToMany(mappedBy = "tool")
+    @JsonManagedReference
     private List<Reservation> reservations;
 
     @Embedded
@@ -55,20 +62,20 @@ public class Tool {
         this.id = id;
     }
 
-    public Supplier getSupplier() {
-        return supplier;
-    }
-
-    public void setSupplier(Supplier supplier) {
-        this.supplier = supplier;
-    }
-
     public Category getCategory() {
         return category;
     }
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public User getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(User supplier) {
+        this.supplier = supplier;
     }
 
     public String getName() {
@@ -143,5 +150,4 @@ public class Tool {
         this.audit = audit;
     }
 
-    
 }

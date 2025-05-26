@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
@@ -19,20 +20,22 @@ public class Reservation {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
+    private User customer;
 
     @ManyToOne
     @JoinColumn(name = "tool_id", nullable = false)
+    @JsonBackReference
     private Tool tool;
 
     @Column(name = "start_date", nullable = false)
     @FutureOrPresent
-    private LocalDate startDate;  // Cambiado a LocalDate
+    private LocalDate startDate; // Cambiado a LocalDate
 
     @Column(name = "end_date", nullable = false)
     @FutureOrPresent
-    private LocalDate endDate;    // Cambiado a LocalDate
+    private LocalDate endDate; // Cambiado a LocalDate
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
@@ -68,14 +71,6 @@ public class Reservation {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
     }
 
     public Tool getTool() {
@@ -142,5 +137,12 @@ public class Reservation {
         this.audit = audit;
     }
 
-    
+    public User getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(User customer) {
+        this.customer = customer;
+    }
+
 }
