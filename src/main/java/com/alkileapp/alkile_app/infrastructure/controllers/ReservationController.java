@@ -90,32 +90,32 @@ public class ReservationController {
     public ResponseEntity<?> create(@Valid @RequestBody ReservationDto reservationDto) {
         try {
             log.info("Datos recibidos: {}", reservationDto);
-            
+
             // Validación adicional
             if (reservationDto.customerId() == null || reservationDto.customerId() <= 0) {
                 log.error("Customer ID inválido: {}", reservationDto.customerId());
                 return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Customer ID is required and must be positive"));
+                        .body(Map.of("error", "Customer ID is required and must be positive"));
             }
-            
+
             if (reservationDto.toolId() == null || reservationDto.toolId() <= 0) {
                 log.error("Tool ID inválido: {}", reservationDto.toolId());
                 return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Tool ID is required and must be positive"));
+                        .body(Map.of("error", "Tool ID is required and must be positive"));
             }
 
             // Verificar que el customer existe
             if (!customerService.existsById(reservationDto.customerId())) {
                 log.error("Customer no encontrado: {}", reservationDto.customerId());
                 return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Customer not found"));
+                        .body(Map.of("error", "Customer not found"));
             }
 
             // Verificar que la tool existe
             if (!toolService.existsById(reservationDto.toolId())) {
                 log.error("Tool no encontrada: {}", reservationDto.toolId());
                 return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Tool not found"));
+                        .body(Map.of("error", "Tool not found"));
             }
 
             log.info("Creando reserva para cliente: {}, herramienta: {}",
@@ -128,34 +128,41 @@ public class ReservationController {
         } catch (IllegalArgumentException e) {
             log.error("Error de validación: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                .body(Map.of("error", e.getMessage()));
+                    .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             log.error("Error interno al crear reserva", e);
             return ResponseEntity.internalServerError()
-                .body(Map.of("error", "Internal server error"));
+                    .body(Map.of("error", "Internal server error"));
         }
     }
 
     private Reservation convertToEntity(ReservationDto dto) {
-        // Validar IDs primero
-        Objects.requireNonNull(dto.customerId(), "Customer ID no puede ser nulo");
-        Objects.requireNonNull(dto.toolId(), "Tool ID no puede ser nulo");
+        // Validate IDs
+        Objects.requireNonNull(dto.customerId(), "Customer ID cannot be null");
+        Objects.requireNonNull(dto.toolId(), "Tool ID cannot be null");
 
+        // Load full Customer entity
         Customer customer = customerService.findById(dto.customerId())
-                .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Customer not found with id: " + dto.customerId()));
 
+        // Load full Tool entity
         Tool tool = toolService.findById(dto.toolId())
-                .orElseThrow(() -> new IllegalArgumentException("Herramienta no encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Tool not found with id: " + dto.toolId()));
 
         Reservation reservation = new Reservation();
         reservation.setCustomer(customer);
         reservation.setTool(tool);
         reservation.setStartDate(dto.startDate());
         reservation.setEndDate(dto.endDate());
-        reservation.setStatus(Reservation.ReservationStatus.valueOf(
-                dto.status() != null ? dto.status() : "PENDING"));
-        reservation.setCreationDate(dto.creationDate() != null ? dto.creationDate() : LocalDateTime.now());
 
+        // Handle status - default to PENDING if not provided
+        if (dto.status() != null) {
+            reservation.setStatus(Reservation.ReservationStatus.valueOf(dto.status()));
+        } else {
+            reservation.setStatus(Reservation.ReservationStatus.PENDING);
+        }
+
+        reservation.setCreationDate(LocalDateTime.now());
         return reservation;
     }
 
