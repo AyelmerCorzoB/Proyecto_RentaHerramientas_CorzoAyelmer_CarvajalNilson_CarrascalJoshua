@@ -30,29 +30,31 @@ public class ReservationController {
     }
 
     @GetMapping
+    public ResponseEntity<List<ReservationDto>> getAll() {
+        List<ReservationDto> reservations = reservationService.findAll().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(reservations);
+    }
+
+    @GetMapping
     public ResponseEntity<List<ReservationDto>> getReservations(
-            @RequestHeader(value = "userId", required = false) Long userId,
-            @RequestHeader(value = "role", required = false) String role) {
-        
+            @RequestHeader("userId") Long userId,
+            @RequestHeader("role") String role) {
         List<Reservation> reservations;
 
-        // Si no se proporcionan headers, devolver todas las reservaciones (para compatibilidad)
-        if (role == null || userId == null) {
-            reservations = reservationService.findAll();
-        } else {
-            switch (role.toUpperCase()) {
-                case "ADMIN":
-                    reservations = reservationService.findAll();
-                    break;
-                case "CUSTOMER":
-                    reservations = reservationService.findByCustomerId(userId);
-                    break;
-                case "SUPPLIER":
-                    reservations = reservationService.findBySupplierId(userId);
-                    break;
-                default:
-                    return ResponseEntity.status(403).build();
-            }
+        switch (role.toUpperCase()) {
+            case "ADMIN":
+                reservations = reservationService.findAll();
+                break;
+            case "CUSTOMER":
+                reservations = reservationService.findByCustomerId(userId);
+                break;
+            case "SUPPLIER":
+                reservations = reservationService.findBySupplierId(userId);
+                break;
+            default:
+                return ResponseEntity.status(403).build();
         }
 
         List<ReservationDto> dtos = reservations.stream()
