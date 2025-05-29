@@ -101,7 +101,7 @@ public class InitialDataConfig {
         };
     }
     @Bean
-    @Order(2)
+    @Order(4)
     CommandLineRunner initCustomerUser(IUserService userService, RoleRepository roleRepository,
             PasswordEncoder passwordEncoder) {
         return args -> {
@@ -131,7 +131,7 @@ public class InitialDataConfig {
     }
 
     @Bean
-    @Order(4)
+    @Order(5)
     CommandLineRunner initDatabaseData(DataSource dataSource) {
         return args -> {
             System.out.println("Ejecutando script SQL...");

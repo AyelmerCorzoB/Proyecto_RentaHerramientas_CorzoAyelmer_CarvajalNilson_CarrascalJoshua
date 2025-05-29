@@ -82,6 +82,8 @@ http://localhost:8080
       "password": "123456789"
     }
    ```
+> NOTA!! Puedes tambien usar el repositoriorio Frontend para loggearte y probarlo : 
+> https://github.com/nilsoncarvajal67950/Proyecto_RentaHerramientas_CarvajalNilson_CorzoAyelmer_CarrascalJhosua
 3. **Recibe un token JWT** en la respuesta al iniciar sesión o registrarte.  
    Ejemplo de respuesta:
    ```json

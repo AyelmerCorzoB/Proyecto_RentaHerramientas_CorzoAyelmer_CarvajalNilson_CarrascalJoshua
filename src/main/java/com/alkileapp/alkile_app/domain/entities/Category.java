@@ -2,6 +2,8 @@ package com.alkileapp.alkile_app.domain.entities;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -21,10 +23,11 @@ public class Category {
     @Column(nullable = false, unique = true, length = 50)
     private String name;
 
-    @Column(length = 255,columnDefinition = "TEXT")
+    @Column(length = 255, columnDefinition = "TEXT")
     private String description;
 
     @OneToMany(mappedBy = "category")
+    @JsonManagedReference("category-tools")
     private List<Tool> tools;
 
     @Embedded
@@ -69,5 +72,5 @@ public class Category {
     public void setAudit(Audit audit) {
         this.audit = audit;
     }
-   
+
 }

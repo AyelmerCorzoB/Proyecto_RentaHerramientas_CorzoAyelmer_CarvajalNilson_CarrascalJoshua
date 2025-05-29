@@ -1,87 +1,256 @@
+-- 1. Insertar roles (si no existen)
 INSERT INTO roles (role_name, description) VALUES 
 ('ADMIN', 'Administrador del sistema'),
 ('CUSTOMER', 'Usuario Cliente'),
-('SUPPLIER', 'Usuario Proveedor');
+('SUPPLIER', 'Usuario Proveedor')
+ON CONFLICT (role_name) DO NOTHING;
 
-INSERT INTO users_roles (user_id, role_id) 
-VALUES (
-  (SELECT id FROM users WHERE username = 'admin'),
-  (SELECT id FROM roles WHERE role_name = 'ADMIN')
-);
-
-INSERT INTO users_roles (user_id, role_id) 
-VALUES (
-  (SELECT id FROM users WHERE username = 'supplier'),
-  (SELECT id FROM roles WHERE role_name = 'SUPPLIER')
-);
-
-INSERT INTO suppliers (user_id, tax_id, company, rating, created_at, updeted_at)
-VALUES (
-  (SELECT id FROM users WHERE username = 'supplier'),
-  '1234567890123',
-  'Herramientas Pro S.A.',
-  4.5,
-  CURRENT_TIMESTAMP,
-  CURRENT_TIMESTAMP
-);
-
-INSERT INTO categories (name, description, created_at, updeted_at) VALUES
-('Herramientas Manuales', 'Herramientas que se operan manualmente sin necesidad de energia electrica', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('Herramientas Electrica', 'Herramientas que funcionan con energia electrica', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('Jardineria', 'Herramientas para el cuidado y mantenimiento de jardines', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('Construccion', 'Herramientas para trabajos de construccion', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('Pintura', 'Herramientas y equipos para trabajos de pintura', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-
-INSERT INTO users (active, name, email, address, password, username, phone, registration_date) VALUES
-(true, 'Juan Perez', 'juan@example.com', 'Calle Falsa 123', '$2a$10$X5h/5X5h5X5h5X5h5X5h5e', 'juanperez', '5551234567', CURRENT_TIMESTAMP),
-(true, 'Maria Garcia', 'maria@example.com', 'Avenida Siempre Viva 456', '$2a$10$X5h/5X5h5X5h5X5h5X5h5e', 'mariagarcia', '5557654321', CURRENT_TIMESTAMP),
-(true, 'Carlos Lopez', 'carlos@example.com', 'Boulevard de los Sueños 789', '$2a$10$X5h/5X5h5X5h5X5h5X5h5e', 'carloslopez', '5559876543', CURRENT_TIMESTAMP);
-
-INSERT INTO users_roles (user_id, role_id) 
-SELECT u.id, r.id 
-FROM users u, roles r 
-WHERE u.username IN ('juanperez', 'mariagarcia', 'carloslopez') 
-AND r.role_name = 'CUSTOMER';
-
-INSERT INTO customers (user_id, tax_id, created_at, updeted_at) 
-SELECT id, '9876543210123', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP 
-FROM users 
-WHERE username IN ('juanperez', 'mariagarcia', 'carloslopez');
-
-INSERT INTO customer_preferences (customer_id, preference) 
+-- 2. Insertar usuarios iniciales
+INSERT INTO users (active, name, email, address, password, username, phone)
 VALUES 
-((SELECT user_id FROM customers WHERE user_id = (SELECT id FROM users WHERE username = 'juanperez')), 'Herramientas Manuales'),
-((SELECT user_id FROM customers WHERE user_id = (SELECT id FROM users WHERE username = 'juanperez')), 'Jardineria'),
-((SELECT user_id FROM customers WHERE user_id = (SELECT id FROM users WHERE username = 'mariagarcia')), 'Herramientas Electrica'),
-((SELECT user_id FROM customers WHERE user_id = (SELECT id FROM users WHERE username = 'carloslopez')), 'Construccion');
+(true, 'Admin Principal', 'admin@alkile.com', 'Oficina Central', '$2a$10$X5h/5X5h5X5h5X5h5X5h5e', 'admin', '5550000001'),
+(true, 'Proveedor Ejemplo', 'supplier@alkile.com', 'Almacén Principal', '$2a$10$X5h/5X5h5X5h5X5h5X5h5e', 'supplier', '5550000002'),
+(true, 'Juan Pérez', 'juan@example.com', 'Calle Falsa 123', '$2a$10$X5h/5X5h5X5h5X5h5X5h5e', 'juanperez', '5551234567'),
+(true, 'María García', 'maria@example.com', 'Avenida Siempre Viva 456', '$2a$10$X5h/5X5h5X5h5X5h5X5h5e', 'mariagarcia', '5557654321'),
+(true, 'Carlos López', 'carlos@example.com', 'Boulevard de los Sueños 789', '$2a$10$X5h/5X5h5X5h5X5h5X5h5e', 'carloslopez', '5559876543')
+ON CONFLICT (username) DO NOTHING;
 
-INSERT INTO tools (available, daily_cost, stock, category_id, supplier_id, name, description, image_url, created_at, updeted_at) VALUES
-(true, 15.50, 3, (SELECT id FROM categories WHERE name = 'Herramientas Manuales'), (SELECT user_id FROM suppliers LIMIT 1), 'Martillo de carpintero', 'Martillo profesional con mango de fibra de vidrio', 'https://example.com/martillo.jpg', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(true, 25.00, 2, (SELECT id FROM categories WHERE name = 'Herramientas Electrica'), (SELECT user_id FROM suppliers LIMIT 1), 'Taladro inalambrico', 'Taladro de 18V con 2 baterias y maletin', 'https://example.com/taladro.jpg', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(true, 12.00, 5, (SELECT id FROM categories WHERE name = 'Jardineria'), (SELECT user_id FROM suppliers LIMIT 1), 'Tijeras de podar', 'Tijeras profesionales para podar arbustos', 'https://example.com/tijeras.jpg', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(true, 40.00, 1, (SELECT id FROM categories WHERE name = 'Construccion'), (SELECT user_id FROM suppliers LIMIT 1), 'Cortadora de ceramica', 'Cortadora profesional para ceramica y azulejos', 'https://example.com/cortadora.jpg', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(true, 18.75, 4, (SELECT id FROM categories WHERE name = 'Pintura'), (SELECT user_id FROM suppliers LIMIT 1), 'Rodillo profesional', 'Kit de rodillos para pintura de diferentes tamaños', 'https://example.com/rodillos.jpg', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+-- 3. Asignar roles a usuarios
+INSERT INTO users_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u, roles r 
+WHERE u.username = 'admin' AND r.role_name = 'ADMIN'
+ON CONFLICT (user_id, role_id) DO NOTHING;
 
-INSERT INTO reservations (start_date, end_date, customer_id, tool_id, status, created_at, updeted_at) VALUES
-(CURRENT_DATE + 1, CURRENT_DATE + 3, (SELECT user_id FROM customers WHERE user_id = (SELECT id FROM users WHERE username = 'juanperez')), (SELECT id FROM tools WHERE name = 'Martillo de carpintero'), 'APPROVED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(CURRENT_DATE + 2, CURRENT_DATE + 5, (SELECT user_id FROM customers WHERE user_id = (SELECT id FROM users WHERE username = 'mariagarcia')), (SELECT id FROM tools WHERE name = 'Taladro inalambrico'), 'PENDING', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(CURRENT_DATE, CURRENT_DATE + 7, (SELECT user_id FROM customers WHERE user_id = (SELECT id FROM users WHERE username = 'carloslopez')), (SELECT id FROM tools WHERE name = 'Cortadora de ceramica'), 'COMPLETED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO users_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u, roles r 
+WHERE u.username IN ('supplier','juanperez') AND r.role_name = 'SUPPLIER'
+ON CONFLICT (user_id, role_id) DO NOTHING;
 
-INSERT INTO payments (amount, reservation_id, payment_method, transaction_id, status, payment_date, created_at, updeted_at) VALUES
-(31.00, (SELECT id FROM reservations WHERE tool_id = (SELECT id FROM tools WHERE name = 'Martillo de carpintero')), 'TARJETA_CREDITO', 'TXN123456', 'COMPLETED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(75.00, (SELECT id FROM reservations WHERE tool_id = (SELECT id FROM tools WHERE name = 'Cortadora de ceramica')), 'TRANSFERENCIA', 'TXN789012', 'COMPLETED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO users_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u, roles r 
+WHERE u.username IN ('mariagarcia', 'carloslopez') AND r.role_name = 'CUSTOMER'
+ON CONFLICT (user_id, role_id) DO NOTHING;
 
-INSERT INTO invoices (payment_id, issue_date, details) VALUES
-((SELECT id FROM payments WHERE transaction_id = 'TXN123456'), CURRENT_TIMESTAMP, 'Factura por alquiler de martillo de carpintero por 2 días'),
-((SELECT id FROM payments WHERE transaction_id = 'TXN789012'), CURRENT_TIMESTAMP, 'Factura por alquiler de cortadora de ceramica por 7 días');
+-- 4. Insertar categorías
+INSERT INTO categories (name, description) VALUES
+('Herramientas Manuales', 'Herramientas operadas manualmente'),
+('Herramientas Eléctricas', 'Herramientas con motor eléctrico'),
+('Jardinería', 'Herramientas para jardines'),
+('Construcción', 'Herramientas para construcción'),
+('Pintura', 'Herramientas para pintura')
+ON CONFLICT (name) DO NOTHING;
 
-INSERT INTO returns (reservation_id, return_date, comments) VALUES
-((SELECT id FROM reservations WHERE tool_id = (SELECT id FROM tools WHERE name = 'Cortadora de ceramica')), CURRENT_TIMESTAMP, 'Herramienta devuelta en buen estado');
+-- 5. Insertar herramientas asociadas al proveedor (usuario con rol SUPPLIER)
+INSERT INTO tools (available, daily_cost, stock, category_id, user_id, name, description, image_url)
+SELECT true, 15.50, 3, cat.id, u.id, 'Martillo de carpintero', 'Martillo profesional con mango de fibra de vidrio', 'https://olimpica.vtexassets.com/arquivos/ids/1391404/image-7ae563d90f9247609ba26133c01dad31.jpg?v=638495005571170000'
+FROM categories cat, users u
+WHERE cat.name = 'Herramientas Manuales' AND u.username = 'supplier'
+ON CONFLICT DO NOTHING;
 
-INSERT INTO notifications (user_id, message, read, created_at, updeted_at) VALUES
-((SELECT id FROM users WHERE username = 'juanperez'), 'Su reserva del martillo ha sido aprobada', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-((SELECT id FROM users WHERE username = 'mariagarcia'), 'Su reserva del taladro está pendiente de aprobación', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-((SELECT id FROM users WHERE username = 'admin'), 'Nuevo usuario registrado: carloslopez', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO tools (available, daily_cost, stock, category_id, user_id, name, description, image_url)
+SELECT true, 25.00, 2, cat.id, u.id, 'Taladro inalámbrico', 'Taladro de 18V con 2 baterías y maletín', 'https://example.com/taladro.jpg'
+FROM categories cat, users u
+WHERE cat.name = 'Herramientas Eléctricas' AND u.username = 'supplier'
+ON CONFLICT DO NOTHING;
 
-INSERT INTO damage_reports (reservation_id, description, repair_cost, resolved, report_date, created_at, updeted_at) VALUES
-((SELECT id FROM reservations WHERE tool_id = (SELECT id FROM tools WHERE name = 'Martillo de carpintero')), 'Mango rajado', 5.50, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+-- 6. Insertar reservaciones (clientes son usuarios con rol CUSTOMER)
+INSERT INTO reservations (start_date, end_date, customer_id, tool_id, status)
+SELECT CURRENT_DATE + 1, CURRENT_DATE + 3, c.id, t.id, 'APPROVED'
+FROM users c
+JOIN tools t ON t.name = 'Martillo de carpintero'
+WHERE c.username = 'juanperez'
+ON CONFLICT DO NOTHING;
+
+INSERT INTO reservations (start_date, end_date, customer_id, tool_id, status)
+SELECT CURRENT_DATE + 2, CURRENT_DATE + 5, c.id, t.id, 'PENDING'
+FROM users c
+JOIN tools t ON t.name = 'Taladro inalámbrico'
+WHERE c.username = 'mariagarcia'
+ON CONFLICT DO NOTHING;
+
+-- 7. Insertar pagos
+INSERT INTO payments (amount, reservation_id, payment_method, transaction_id, status)
+SELECT 31.00, r.id, 'CREDIT_CARD', 'TXN' || LPAD(r.id::text, 6, '0'), 'COMPLETED'
+FROM reservations r
+WHERE r.status = 'APPROVED'
+ON CONFLICT DO NOTHING;
+
+-- 8. Insertar facturas
+INSERT INTO invoices (payment_id, issue_date, details)
+SELECT p.id, CURRENT_TIMESTAMP, 'Factura por alquiler de ' || t.name || ' por ' || (r.end_date - r.start_date) || ' días'
+FROM payments p
+JOIN reservations r ON p.reservation_id = r.id
+JOIN tools t ON r.tool_id = t.id
+ON CONFLICT (payment_id) DO NOTHING;
+
+-- 9. Insertar devoluciones
+INSERT INTO "returns" (reservation_id, return_date, comments)
+SELECT r.id, CURRENT_TIMESTAMP, 'Herramienta devuelta en buen estado'
+FROM reservations r
+WHERE r.status = 'COMPLETED'
+ON CONFLICT (reservation_id) DO NOTHING;
+
+-- 10. Insertar notificaciones
+INSERT INTO notifications (user_id, message, "read", creation_date)
+SELECT u.id, 'Su reserva del martillo ha sido aprobada', false, CURRENT_TIMESTAMP
+FROM users u WHERE u.username = 'juanperez'
+ON CONFLICT DO NOTHING;
+
+INSERT INTO notifications (user_id, message, "read", creation_date)
+SELECT u.id, 'Su reserva del taladro está pendiente de aprobación', false, CURRENT_TIMESTAMP
+FROM users u WHERE u.username = 'mariagarcia'
+ON CONFLICT DO NOTHING;
+
+-- 11. Insertar reportes de daño (opcional)
+INSERT INTO damage_reports (reservation_id, description, repair_cost, resolved, report_date)
+SELECT r.id, 'Mango rajado', 5.50, false, CURRENT_TIMESTAMP
+FROM reservations r
+JOIN tools t ON r.tool_id = t.id
+WHERE t.name = 'Martillo de carpintero'
+ON CONFLICT (reservation_id) DO NOTHING;
+
+-- 12. Insertar más usuarios proveedores
+INSERT INTO users (active, name, email, address, password, username, phone)
+VALUES 
+(true, 'Laura Torres', 'laura@herramientas.com', 'Calle Industrial 789', '$2a$10$X5h/5X5h5X5h5X5h5X5h5e', 'lauratorres', '5553332222'),
+(true, 'Carlos Méndez', 'carlos@herramientas.com', 'Parque Empresarial', '$2a$10$X5h/5X5h5X5h5X5h5X5h5e', 'carlosmendez', '5554443333'),
+(true, 'Ana Rojas', 'ana@jardin.com', 'Zona Verde 456', '$2a$10$X5h/5X5h5X5h5X5h5X5h5e', 'anarojas', '5556667777')
+ON CONFLICT (username) DO NOTHING;
+
+-- 13. Asignar roles a nuevos proveedores
+INSERT INTO users_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u, roles r 
+WHERE u.username IN ('lauratorres', 'carlosmendez', 'anarojas') AND r.role_name = 'SUPPLIER'
+ON CONFLICT (user_id, role_id) DO NOTHING;
+
+-- 14. Insertar más categorías
+INSERT INTO categories (name, description) VALUES
+('Electricidad', 'Herramientas para electricistas'),
+('Fontanería', 'Herramientas para plomería'),
+('Automotriz', 'Herramientas para mecánica'),
+('Seguridad', 'Equipos de protección personal'),
+('Jardinería Avanzada', 'Herramientas especializadas para jardinería')
+ON CONFLICT (name) DO NOTHING;
+
+-- 15. Insertar más herramientas
+-- Herramientas para proveedor 'supplier'
+INSERT INTO tools (available, daily_cost, stock, category_id, user_id, name, description, image_url)
+SELECT true, 18.75, 4, cat.id, u.id, 'Llave inglesa ajustable', 'De 12 pulgadas con mango ergonómico', 'https://example.com/llave.jpg '
+FROM categories cat, users u
+WHERE cat.name = 'Herramientas Manuales' AND u.username = 'supplier'
+UNION ALL
+SELECT true, 35.00, 1, cat.id, u.id, 'Sierra circular eléctrica', '7-1/4 pulgadas con guía láser', 'https://example.com/sierra.jpg '
+FROM categories cat, users u
+WHERE cat.name = 'Herramientas Eléctricas' AND u.username = 'supplier'
+UNION ALL
+SELECT true, 12.00, 5, cat.id, u.id, 'Rastrillo de jardín', 'Con dientes reforzados de acero', 'https://example.com/rastrillo.jpg '
+FROM categories cat, users u
+WHERE cat.name = 'Jardinería' AND u.username = 'supplier';
+
+-- Herramientas para proveedor 'lauratorres'
+INSERT INTO tools (available, daily_cost, stock, category_id, user_id, name, description, image_url)
+SELECT true, 45.00, 2, cat.id, u.id, 'Multímetro digital', 'Para mediciones eléctricas precisas', 'https://example.com/multimetro.jpg '
+FROM categories cat, users u
+WHERE cat.name = 'Electricidad' AND u.username = 'lauratorres'
+UNION ALL
+SELECT true, 28.50, 3, cat.id, u.id, 'Taladro percutor', '24V con juego de brocas', 'https://example.com/taladropercut.jpg '
+FROM categories cat, users u
+WHERE cat.name = 'Herramientas Eléctricas' AND u.username = 'lauratorres';
+
+-- 16. Insertar más clientes
+INSERT INTO users (active, name, email, address, password, username, phone)
+VALUES 
+(true, 'Pedro Sánchez', 'pedro@example.com', 'Calle Real 789', '$2a$10$X5h/5X5h5X5h5X5h5X5h5e', 'pedrosanchez', '5558889999'),
+(true, 'Sofía Fernández', 'sofia@example.com', 'Urbanización Norte', '$2a$10$X5h/5X5h5X5h5X5h5X5h5e', 'sofiafernandez', '5551112222')
+ON CONFLICT (username) DO NOTHING;
+
+-- 17. Asignar roles a nuevos clientes
+INSERT INTO users_roles (user_id, role_id)
+SELECT u.id, r.id FROM users u, roles r 
+WHERE u.username IN ('pedrosanchez', 'sofiafernandez') AND r.role_name = 'CUSTOMER'
+ON CONFLICT (user_id, role_id) DO NOTHING;
+
+-- 18. Insertar más reservaciones
+INSERT INTO reservations (start_date, end_date, customer_id, tool_id, status)
+SELECT CURRENT_DATE + 3, CURRENT_DATE + 6, c.id, t.id, 'PENDING'
+FROM users c
+JOIN tools t ON t.name = 'Llave inglesa ajustable'
+WHERE c.username = 'mariagarcia'
+UNION ALL
+SELECT CURRENT_DATE + 1, CURRENT_DATE + 2, c.id, t.id, 'APPROVED'
+FROM users c
+JOIN tools t ON t.name = 'Rastrillo de jardín'
+WHERE c.username = 'sofiafernandez'
+UNION ALL
+SELECT CURRENT_DATE + 4, CURRENT_DATE + 7, c.id, t.id, 'COMPLETED'
+FROM users c
+JOIN tools t ON t.name = 'Martillo de carpintero'
+WHERE c.username = 'pedrosanchez'
+UNION ALL
+SELECT CURRENT_DATE + 5, CURRENT_DATE + 8, c.id, t.id, 'CANCELED'
+FROM users c
+JOIN tools t ON t.name = 'Taladro inalámbrico'
+WHERE c.username = 'carloslopez';
+
+-- 19. Insertar más pagos
+INSERT INTO payments (amount, reservation_id, payment_method, transaction_id, status)
+SELECT (r.end_date - r.start_date) * t.daily_cost, r.id, 'PAYPAL', 'PP' || LPAD(r.id::text, 6, '0'), 'COMPLETED'
+FROM reservations r
+JOIN tools t ON r.tool_id = t.id
+WHERE r.status = 'APPROVED'
+UNION ALL
+SELECT (r.end_date - r.start_date) * t.daily_cost, r.id, 'BANK_TRANSFER', 'TR' || LPAD(r.id::text, 6, '0'), 'PROCESSING'
+FROM reservations r
+JOIN tools t ON r.tool_id = t.id
+WHERE r.status = 'PENDING';
+
+-- 20. Insertar más facturas
+INSERT INTO invoices (payment_id, issue_date, details)
+SELECT p.id, CURRENT_TIMESTAMP, 'Factura por alquiler de ' || t.name || ' desde ' || r.start_date || ' hasta ' || r.end_date
+FROM payments p
+JOIN reservations r ON p.reservation_id = r.id
+JOIN tools t ON r.tool_id = t.id
+WHERE p.status = 'COMPLETED'
+ON CONFLICT (payment_id) DO NOTHING;
+
+-- 21. Insertar más devoluciones
+INSERT INTO "returns" (reservation_id, return_date, comments)
+SELECT r.id, CURRENT_TIMESTAMP + INTERVAL '1 day', 'Herramienta devuelta con ligeros desgastes'
+FROM reservations r
+WHERE r.status = 'COMPLETED'
+UNION ALL
+SELECT r.id, CURRENT_TIMESTAMP, 'No se devolvió por cancelación'
+FROM reservations r
+WHERE r.status = 'CANCELED'
+ON CONFLICT (reservation_id) DO NOTHING;
+
+-- 22. Insertar más notificaciones
+INSERT INTO notifications (user_id, message, "read", creation_date)
+SELECT u.id, 'Nuevo pago realizado para su herramienta: ' || t.name, false, CURRENT_TIMESTAMP
+FROM users u
+JOIN tools t ON u.id = t.user_id
+JOIN reservations r ON t.id = r.tool_id
+JOIN payments p ON r.id = p.reservation_id
+WHERE p.status = 'COMPLETED'
+GROUP BY u.id, t.name
+UNION ALL
+SELECT u.id, 'Tiene una nueva reserva pendiente por aprobar', false, CURRENT_TIMESTAMP
+FROM users u
+WHERE EXISTS (
+    SELECT 1 FROM reservations r 
+    WHERE r.status = 'PENDING' AND r.tool_id IN (
+        SELECT id FROM tools WHERE user_id = u.id
+    )
+);
+
+-- 23. Insertar más reportes de daño
+INSERT INTO damage_reports (reservation_id, description, repair_cost, resolved, report_date)
+SELECT r.id, 'Motor sobrecalentado', 20.00, true, CURRENT_TIMESTAMP
+FROM reservations r
+JOIN tools t ON r.tool_id = t.id
+WHERE t.name = 'Taladro inalámbrico'
+UNION ALL
+SELECT r.id, 'Corte en la punta', 8.50, false, CURRENT_TIMESTAMP
+FROM reservations r
+JOIN tools t ON r.tool_id = t.id
+WHERE t.name = 'Sierra circular eléctrica';

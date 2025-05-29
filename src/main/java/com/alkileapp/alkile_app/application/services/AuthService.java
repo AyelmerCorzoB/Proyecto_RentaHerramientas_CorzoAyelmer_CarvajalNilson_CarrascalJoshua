@@ -57,7 +57,11 @@ public class AuthService {
                 .map(grantedAuthority -> grantedAuthority.getAuthority().replace("ROLE_", ""))
                 .orElseThrow(() -> new RuntimeException("User has no role assigned"));
 
-        return new AuthResponse(token, role);
+        User user = userService.findOneByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = user.getId();
+
+        return new AuthResponse(token, role, userId);
     }
 
     public AuthResponse register(RegisterRequest request) {
@@ -89,7 +93,7 @@ public class AuthService {
         String jwtToken = jwtService.generateToken(savedUser);
 
         String role = userRole.getName();
-
-        return new AuthResponse(jwtToken, role);
+        Long userId = savedUser.getId();
+        return new AuthResponse(jwtToken, role,userId);
     }
 }

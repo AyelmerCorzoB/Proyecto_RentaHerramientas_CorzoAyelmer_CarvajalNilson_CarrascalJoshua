@@ -2,7 +2,6 @@ package com.alkileapp.alkile_app.infrastructure.controllers;
 
 import com.alkileapp.alkile_app.application.services.ICategoryService;
 import com.alkileapp.alkile_app.domain.dto.CategoryDto;
-import com.alkileapp.alkile_app.domain.dto.SupplierDto;
 import com.alkileapp.alkile_app.domain.dto.ToolDto;
 import com.alkileapp.alkile_app.domain.entities.Category;
 import com.alkileapp.alkile_app.domain.entities.Tool;
@@ -79,13 +78,7 @@ public class CategoryController {
                               .map(Category::getId)
                               .orElse(null);
 
-    SupplierDto supplierDto = new SupplierDto(
-        tool.getSupplier().getId(),
-        tool.getSupplier().getTaxId(),
-        tool.getSupplier().getCompany(),
-        tool.getSupplier().getRating(),
-        tool.getSupplier().getUser().getId()
-    );
+    
 
     return new ToolDto(
         tool.getId(),
@@ -95,7 +88,7 @@ public class CategoryController {
         tool.getStock(),
         tool.getImageUrl(),
         categoryId,
-        supplierDto
+        tool.getSupplier()
     );
 }
 }
