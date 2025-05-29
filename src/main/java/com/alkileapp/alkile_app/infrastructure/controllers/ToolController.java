@@ -1,8 +1,10 @@
 package com.alkileapp.alkile_app.infrastructure.controllers;
 
+import com.alkileapp.alkile_app.application.services.ICategoryService;
 import com.alkileapp.alkile_app.application.services.IReservationService;
 import com.alkileapp.alkile_app.application.services.IToolService;
 import com.alkileapp.alkile_app.application.services.IUserService;
+import com.alkileapp.alkile_app.domain.dto.ToolCreateDto;
 import com.alkileapp.alkile_app.domain.dto.ToolDto;
 import com.alkileapp.alkile_app.domain.entities.Category;
 import com.alkileapp.alkile_app.domain.entities.Tool;
@@ -34,12 +36,14 @@ public class ToolController {
   private final IReservationService reservationService;
   private final String UPLOAD_DIR = "uploads/";
   private final IUserService supplierService;
+  private final ICategoryService categoryService;
 
   public ToolController(IToolService toolService, IReservationService reservationService,
-      IUserService supplierService) {
+      IUserService supplierService, ICategoryService categoryService) {
     this.toolService = toolService;
     this.reservationService = reservationService;
     this.supplierService = supplierService;
+    this.categoryService = categoryService;
     try {
       Files.createDirectories(Paths.get(UPLOAD_DIR));
     } catch (IOException e) {
@@ -69,15 +73,28 @@ public class ToolController {
       @RequestPart(value = "images", required = false) List<MultipartFile> images) {
 
     try {
-      Tool tool = new ObjectMapper().readValue(toolJson, Tool.class);
 
-      if (tool.getSupplier() != null && tool.getSupplier().getId() != null) {
-        Optional<User> supplierOpt = supplierService.findById(tool.getSupplier().getId());
+      ToolCreateDto toolDto = new ObjectMapper().readValue(toolJson, ToolCreateDto.class);
+
+      Tool tool = new Tool();
+      tool.setName(toolDto.name());
+      tool.setDescription(toolDto.description());
+      tool.setDailyCost(toolDto.dailyCost());
+      tool.setStock(toolDto.stock());
+
+      if (toolDto.categoryId() != null) {
+
+        Category category = categoryService.findById(toolDto.categoryId())
+            .orElseThrow(() -> new EntityNotFoundException("Categoría no encontrada"));
+        tool.setCategory(category);
+      }
+
+      if (toolDto.supplierId() != null) {
+        Optional<User> supplierOpt = supplierService.findById(toolDto.supplierId());
         if (supplierOpt.isEmpty() || supplierOpt.get().getName() == null) {
           return ResponseEntity.badRequest()
               .body(Map.of("message", "El proveedor seleccionado no es válido o no tiene usuario asociado"));
         }
-
         tool.setSupplier(supplierOpt.get());
       }
 
@@ -159,8 +176,6 @@ public class ToolController {
     Long categoryId = Optional.ofNullable(tool.getCategory())
         .map(Category::getId)
         .orElse(null);
-
-    
 
     return new ToolDto(
         tool.getId(),

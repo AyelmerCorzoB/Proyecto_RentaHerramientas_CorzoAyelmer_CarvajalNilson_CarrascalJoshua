@@ -26,16 +26,16 @@ public class Reservation {
 
     @ManyToOne
     @JoinColumn(name = "tool_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference("tool-reservations")
     private Tool tool;
 
     @Column(name = "start_date", nullable = false)
     @FutureOrPresent
-    private LocalDate startDate; // Cambiado a LocalDate
+    private LocalDate startDate;
 
     @Column(name = "end_date", nullable = false)
     @FutureOrPresent
-    private LocalDate endDate; // Cambiado a LocalDate
+    private LocalDate endDate;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)

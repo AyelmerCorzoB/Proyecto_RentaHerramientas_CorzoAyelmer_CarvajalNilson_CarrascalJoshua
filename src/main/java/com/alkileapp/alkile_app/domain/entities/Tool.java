@@ -23,7 +23,7 @@ public class Tool {
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = true)
-    @JsonBackReference
+    @JsonBackReference("category-tools")
     private Category category;
 
     @Column(nullable = false, length = 100)
@@ -48,7 +48,7 @@ public class Tool {
     private boolean available = true;
 
     @OneToMany(mappedBy = "tool")
-    @JsonManagedReference
+    @JsonManagedReference("tool-reservations")
     private List<Reservation> reservations;
 
     @Embedded

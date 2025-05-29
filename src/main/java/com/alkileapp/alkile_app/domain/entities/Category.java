@@ -23,11 +23,11 @@ public class Category {
     @Column(nullable = false, unique = true, length = 50)
     private String name;
 
-    @Column(length = 255,columnDefinition = "TEXT")
+    @Column(length = 255, columnDefinition = "TEXT")
     private String description;
 
     @OneToMany(mappedBy = "category")
-    @JsonManagedReference
+    @JsonManagedReference("category-tools")
     private List<Tool> tools;
 
     @Embedded
@@ -72,5 +72,5 @@ public class Category {
     public void setAudit(Audit audit) {
         this.audit = audit;
     }
-   
+
 }
